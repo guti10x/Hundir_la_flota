@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Site BuildName="Win32-ninja"
+	BuildStamp="20230702-1450-Experimental"
+	Name="PCRODHER"
+	Generator="ctest-3.24.1"
+	CompilerName="C:/msys64/mingw64/bin/g++.exe"
+	CompilerVersion="12.2.0"
+	OSName="Windows"
+	Hostname="PCRODHER"
+	OSRelease=" Personal"
+	OSVersion=" (Build 22621)"
+	OSPlatform="AMD64"
+	Is64Bits="1"
+	VendorString=""
+	VendorID="Unknown Manufacturer"
+	FamilyID="0"
+	ModelID="0"
+	ProcessorCacheSize="0"
+	NumberOfLogicalCPU="8"
+	NumberOfPhysicalCPU="4"
+	TotalVirtualMemory="25815"
+	TotalPhysicalMemory="16026"
+	LogicalProcessorsPerPhysical="2"
+	ProcessorClockFrequency="2918"
+	>
+	<Testing>
+		<StartDateTime>Jul 02 16:50 Hora de verano romance</StartDateTime>
+		<StartTestTime>1688309440</StartTestTime>
+		<TestList/>
+		<EndDateTime>Jul 02 16:50 Hora de verano romance</EndDateTime>
+		<EndTestTime>1688309440</EndTestTime>
+		<ElapsedMinutes>0</ElapsedMinutes>
+	</Testing>
+</Site>
