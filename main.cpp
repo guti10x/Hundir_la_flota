@@ -83,7 +83,6 @@ int cambioCol (int direction,int lastHitCol) {
 }
 
 
-
 int main() {
     int tableroJugador1[ROWS][COLS];
     int tableroJugador2[ROWS][COLS];
@@ -112,7 +111,7 @@ int main() {
     std::cout << "|         Que comience el juego             |"<<std::endl;
     std::cout << " -------------------------------------------"<<std::endl;
 
-        pid_t pid1, pid2;
+    pid_t pid1, pid2;
 
     // Crear el primer proceso hijo
     pid1 = fork();
@@ -157,7 +156,7 @@ int main() {
                 nextRow = lastHitRow;
                 nextCol = lastHitCol + 1;
                 int contador= 4;
-                while (tableroJugador1[nextRow][nextCol] != 1 && tableroJugador1[nextRow][nextCol] != 0){  
+                while (tableroJugador2[nextRow][nextCol] != 1 && tableroJugador2[nextRow][nextCol] != 0){  
                    cambioCol(direction,nextRow);
                    cambioCol(direction,nextCol);
                     if (contador>4){
@@ -172,7 +171,7 @@ int main() {
                 nextRow = lastHitRow + 1;
                 nextCol = lastHitCol;
                 int contador= 4;
-                while (tableroJugador1[nextRow][nextCol] != 1 && tableroJugador1[nextRow][nextCol] != 0){  
+                while (tableroJugador2[nextRow][nextCol] != 1 && tableroJugador2[nextRow][nextCol] != 0){  
                    cambioCol(direction,nextRow);
                    cambioCol(direction,nextCol);
                     if (contador>4){
@@ -186,7 +185,7 @@ int main() {
                 nextRow = lastHitRow;
                 nextCol = lastHitCol - 1;
                 int contador= 4;
-                while (tableroJugador1[nextRow][nextCol] != 1 && tableroJugador1[nextRow][nextCol] != 0){  
+                while (tableroJugador2[nextRow][nextCol] != 1 && tableroJugador2[nextRow][nextCol] != 0){  
                    cambioCol(direction,nextRow);
                    cambioCol(direction,nextCol);
                     if (contador>4){
@@ -200,7 +199,7 @@ int main() {
                 nextRow = lastHitRow - 1;
                 nextCol = lastHitCol;
                 int contador= 4;
-                while (tableroJugador1[nextRow][nextCol] != 1 && tableroJugador1[nextRow][nextCol] != 0){  
+                while (tableroJugador2[nextRow][nextCol] != 1 && tableroJugador2[nextRow][nextCol] != 0){  
                    nextRow=cambioCol(direction,nextRow);
                    nextCol=cambioCol(direction,nextCol);
                     if (contador>4){
@@ -212,14 +211,14 @@ int main() {
             }
 
             // Realizar disparo                       
-            int target = tableroJugador1[nextRow][nextCol];
+            int target = tableroJugador2[nextRow][nextCol];
             
             std::cout << "Jugador1 - disparando a [" << nextRow << ", " << nextCol << "]" << std::endl;
 
             // Procesar el resultado del disparo
             if (target == 1) {
-                // disparo al barco --> disparo
-                tableroJugador1[nextRow][nextCol] = 3;  // Marcar como barco hundido
+                // Disparo al barco --> disparo
+                tableroJugador2[nextRow][nextCol] = 3;  // Marcar como barco hundido
                 std::cout << "Jugador1 - impactado a barco enemigo! [" << nextRow << ", " << nextCol << "]" << std::endl;
 
                 lastHitRow = nextRow;
@@ -239,24 +238,20 @@ int main() {
                     estadoJuego = false;
                 }
             } else if (target == 0) {
-                //  disparo al agua --> disparo aleatorio
+                //  Disparo al agua --> disparo aleatorio
                 direction = 0;
                 std::cout << "Jugador1 - disparo al agua!" << std::endl;
-
-            } else {
-                // El disparo ya se había realizado en esa posición
-                // ...
             }
         }
     }
-    /*
+    
     // Crear el segundo proceso hijo
     pid2 = fork();
     if (pid2 < 0) {
         // Error al crear el proceso hijo
         std::cerr << "Error al crear el segundo proceso hijo." << std::endl;
-        return 1;
-    } else if (pid2 == 0) {
+           return 1;
+    } else if (pid1 == 0) {
         // Código para el primer proceso hijo (jugador 1)
         std::cout << "Proceso hijo 2 lanzado exitosamente" << std::endl;
 
@@ -271,12 +266,14 @@ int main() {
         int lastHitRow = -1;     // Fila del último disparo certero
         int lastHitCol = -1;     // Columna del último disparo certero
         
-        while (true) {
+        bool estadoJuego = true;
+        while (estadoJuego= true ){
             // Generar timepo de disparo aleatorio
             std::uniform_int_distribution<> waitDist(0, 10);
             int waitTime = waitDist(gen);
+            std::cout << "Jugador2 - tiempo para sigueinte disparo: " <<waitTime<< std::endl;
             sleep(waitTime);
-
+            
             // Coordenadas del siguiente disparo
             int nextRow, nextCol;
 
@@ -284,123 +281,108 @@ int main() {
                 // Disparo aleatorio
                 nextRow = rowDist(gen);
                 nextCol = colDist(gen);
-                std::cout << "aleatorio "<<nextRow<<" "<<nextCol<< std::endl;
-
+                std::cout << "Jugador2 - disparo aleatorio con direción [" <<nextRow<<" "<<nextCol<<"]"<<std::endl;
+                
             } else if (direction == 1) {
                 // Disparo hacia la derecha
                 nextRow = lastHitRow;
                 nextCol = lastHitCol + 1;
                 int contador= 4;
-                while (tableroJugador2[nextRow][nextCol] != 1 && tableroJugador2[nextRow][nextCol] != 0){  
+                while (tableroJugador1[nextRow][nextCol] != 1 && tableroJugador1[nextRow][nextCol] != 0){  
                    cambioCol(direction,nextRow);
                    cambioCol(direction,nextCol);
                     if (contador>4){
-                        std::cout << "Error fatal" << std::endl;
+                        std::cout << "Jugador2 - error fatal" << std::endl;
                         break;
                     }
                 }  
+                std::cout << "Jugador2 - disparo con direción [" <<nextRow<<" "<<nextCol<<"]"<<std::endl;
     
             } else if (direction == 2) {
                 // Disparo hacia abajo
                 nextRow = lastHitRow + 1;
                 nextCol = lastHitCol;
                 int contador= 4;
-                while (tableroJugador2[nextRow][nextCol] != 1 && tableroJugador2[nextRow][nextCol] != 0){  
+                while (tableroJugador1[nextRow][nextCol] != 1 && tableroJugador1[nextRow][nextCol] != 0){  
                    cambioCol(direction,nextRow);
                    cambioCol(direction,nextCol);
                     if (contador>4){
-                        std::cout << "Error fatal" << std::endl;
+                        std::cout << "Jugador2 - error fatal" << std::endl;
                         break;
                     }
                 } 
+                std::cout << "Jugador2 - disparo con direción [" <<nextRow<<" "<<nextCol<<"]"<<std::endl;
             } else if (direction == 3) {
                 // Disparo hacia la izquierda
                 nextRow = lastHitRow;
                 nextCol = lastHitCol - 1;
                 int contador= 4;
-                while (tableroJugador2[nextRow][nextCol] != 1 && tableroJugador2[nextRow][nextCol] != 0){  
+                while (tableroJugador1[nextRow][nextCol] != 1 && tableroJugador1[nextRow][nextCol] != 0){  
                    cambioCol(direction,nextRow);
                    cambioCol(direction,nextCol);
                     if (contador>4){
-                        std::cout << "Error fatal" << std::endl;
+                        std::cout << "Jugador2 - error fatal" << std::endl;
                         break;
                     }
-                } 
+                }
+                std::cout << "Jugador2 - disparo con direción [" <<nextRow<<" "<<nextCol<<"]"<<std::endl;
             } else if (direction == 4) {
                 // Disparo hacia arriba
                 nextRow = lastHitRow - 1;
                 nextCol = lastHitCol;
                 int contador= 4;
-                while (tableroJugador2[nextRow][nextCol] != 1 && tableroJugador2[nextRow][nextCol] != 0){  
-                   cambioCol(direction,nextRow);
-                   cambioCol(direction,nextCol);
+                while (tableroJugador1[nextRow][nextCol] != 1 && tableroJugador1[nextRow][nextCol] != 0){  
+                   nextRow=cambioCol(direction,nextRow);
+                   nextCol=cambioCol(direction,nextCol);
                     if (contador>4){
-                        std::cout << "Error fatal" << std::endl;
+                        std::cout << "Jugador2 - error fatal" << std::endl;
                         break;
                     }
                 } 
+                std::cout << "Jugador2 - disparo con direción [" <<nextRow<<" "<<nextCol<<"]"<<std::endl;
             }
-            // Realizar disparo 
-            int target = tableroJugador2[nextRow][nextCol];
-            std::cout << "Disparo jugador 2: [" << nextRow << ", " << nextCol << "] - " << target << std::endl;
+
+            // Realizar disparo                       
+            int target = tableroJugador1[nextRow][nextCol];
+            
+            std::cout << "Jugador2 - disparando a [" << nextRow << ", " << nextCol << "]" << std::endl;
 
             // Procesar el resultado del disparo
             if (target == 1) {
-                // disparo al barco --> disparo
-                tableroJugador2[nextRow][nextCol] = 3;  // Marcar como barco hundido
-                
+                // Disparo al barco --> disparo
+                tableroJugador1[nextRow][nextCol] = 3;  // Marcar como barco hundido
+                std::cout << "Jugador2 - impactado a barco enemigo! [" << nextRow << ", " << nextCol << "]" << std::endl;
+
                 lastHitRow = nextRow;
                 lastHitCol = nextCol;
 
-            
 
 
 
 
-
-
-
-
-
-                
 
                 // Actualizar la dirección del siguiente disparo
                 direction = (direction + 1) % 4;  // Incrementar en sentido de las agujas del reloj (derecha, abajo, izquierda, arriba)
 
                 // Verificar si se hundieron todos los barcos del oponente
-                if (todosBarcosHundidos(tableroJugador2)) {
-                    std::cout << "Jugador 1 ha ganado!" << std::endl;
-                    break;
+                if (todosBarcosHundidos(tableroJugador1)) {
+                    std::cout << "Jugador 2 ha ganado!" << std::endl;
+                    estadoJuego = false;
                 }
-            } else if (target == 0) {
-                //  disparo al agua --> disparo aleatorio
+            } else if(target == 0) {
+                //  Disparo al agua --> disparo aleatorio
                 direction = 0;
-
-            } else {
-                // El disparo ya se había realizado en esa posición
-                // ...
-            }
+                std::cout << "Jugador2- disparo al agua!" << std::endl;
+            }   
         }
     }
-*/
-
-
-
-
-
-
-
-
-
-
-
+    
     // Código para el proceso padre
-    // ...
-
+  
     // Esperar a que ambos procesos hijos terminen
     int status;
     waitpid(pid1, &status, 0);
-    //waitpid(pid2, &status, 0);
+    waitpid(pid2, &status, 0);
 
     return 0;
 }
