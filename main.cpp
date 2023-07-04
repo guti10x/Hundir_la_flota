@@ -1,11 +1,10 @@
 #include <iostream>
 #include <fstream>
-#include <vector>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <random>
-#include <fstream>
+#include <thread>
 
 const int ROWS = 8;
 const int COLS = 8;
@@ -82,48 +81,13 @@ int cambioCol (int direction,int lastHitCol) {
             }
 }
 
-
-int main() {
-    int tableroJugador1[ROWS][COLS];
+ void jugador1(){
     int tableroJugador2[ROWS][COLS];
-
-    // Cargar tablero del jugador 1
-    cargarTablero("tablero_jugador1.txt", tableroJugador1);
 
     // Cargar tablero del jugador 2
     cargarTablero("tablero_jugador2.txt", tableroJugador2);
 
-    // Mostrar tablero del jugador 1
-    std::cout << "Tablero del jugador 1:" << std::endl;
-    std::cout << std::endl;
-    imprimirTablero(tableroJugador1);
-    std::cout<< std::endl;
-    std::cout << std::endl;
-
-    // Mostrar tablero del jugador 2
-    std::cout << "Tablero del jugador 2:" << std::endl;
-    std::cout << std::endl;
-    imprimirTablero(tableroJugador2);
-    std::cout<< std::endl;
-    std::cout << std::endl;
-
-    std::cout << " -------------------------------------------"<<std::endl;
-    std::cout << "|         Que comience el juego             |"<<std::endl;
-    std::cout << " -------------------------------------------"<<std::endl;
-
-    pid_t pid1, pid2;
-
-    // Crear el primer proceso hijo
-    pid1 = fork();
-    if (pid1 < 0) {
-        // Error al crear el proceso hijo
-        std::cerr << "Error al crear el primer proceso hijo" << std::endl;
-        return 1;
-    } else if (pid1 == 0) {
-        // Código para el primer proceso hijo (jugador 1)
-        std::cout << "Proceso hijo 1 lanzado exitosamente" << std::endl;
-
-        // Generar fila y columna disparo aleatorio
+    // Generar fila y columna disparo aleatorio
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_int_distribution<> rowDist(0, 8);
@@ -210,7 +174,7 @@ int main() {
                 std::cout << "Jugador1 - disparo con direción [" <<nextRow<<" "<<nextCol<<"]"<<std::endl;
             }
 
-            // Realizar disparo                       
+                 // Realizar disparo                       
             int target = tableroJugador2[nextRow][nextCol];
             
             std::cout << "Jugador1 - disparando a [" << nextRow << ", " << nextCol << "]" << std::endl;
@@ -233,7 +197,7 @@ int main() {
                 direction = (direction + 1) % 4;  // Incrementar en sentido de las agujas del reloj (derecha, abajo, izquierda, arriba)
 
                 // Verificar si se hundieron todos los barcos del oponente
-                if (todosBarcosHundidos(tableroJugador1)) {
+                if (todosBarcosHundidos(tableroJugador2)) {
                     std::cout << "Jugador 1 ha ganado!" << std::endl;
                     estadoJuego = false;
                 }
@@ -241,21 +205,21 @@ int main() {
                 //  Disparo al agua --> disparo aleatorio
                 direction = 0;
                 std::cout << "Jugador1 - disparo al agua!" << std::endl;
-            }
+            } else if(target == 3) {
+                //  Disparo al agua --> disparo aleatorio
+                direction = 0;
+                std::cout << "Jugador2 - disparo al agua!" << std::endl;
+            }   
         }
-    }
-    
-    // Crear el segundo proceso hijo
-    pid2 = fork();
-    if (pid2 < 0) {
-        // Error al crear el proceso hijo
-        std::cerr << "Error al crear el segundo proceso hijo." << std::endl;
-           return 1;
-    } else if (pid1 == 0) {
-        // Código para el primer proceso hijo (jugador 1)
-        std::cout << "Proceso hijo 2 lanzado exitosamente" << std::endl;
+ }
 
-        // Generar fila y columna disparo aleatorio
+ void jugador2() {
+    int tableroJugador1[ROWS][COLS];
+
+    // Cargar tablero del jugador 2
+    cargarTablero("tablero_jugador1.txt", tableroJugador1);
+
+    // Generar fila y columna disparo aleatorio
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_int_distribution<> rowDist(0, 8);
@@ -372,17 +336,74 @@ int main() {
             } else if(target == 0) {
                 //  Disparo al agua --> disparo aleatorio
                 direction = 0;
-                std::cout << "Jugador2- disparo al agua!" << std::endl;
+                std::cout << "Jugador2 - disparo al agua!" << std::endl;
+            } else if(target == 3) {
+                //  Disparo al agua --> disparo aleatorio
+                direction = 0;
+                std::cout << "Jugador2 - disparo al agua!" << std::endl;
             }   
         }
+ }
+int main() {
+    int tableroJugador1[ROWS][COLS];
+    int tableroJugador2[ROWS][COLS];
+
+    // Cargar tablero del jugador 1
+    cargarTablero("tablero_jugador1.txt", tableroJugador1);
+
+    // Cargar tablero del jugador 2
+    cargarTablero("tablero_jugador2.txt", tableroJugador2);
+
+    // Mostrar tablero del jugador 1
+    std::cout << "Tablero del jugador 1:" << std::endl;
+    std::cout << std::endl;
+    imprimirTablero(tableroJugador1);
+    std::cout<< std::endl;
+    std::cout << std::endl;
+
+    // Mostrar tablero del jugador 2
+    std::cout << "Tablero del jugador 2:" << std::endl;
+    std::cout << std::endl;
+    imprimirTablero(tableroJugador2);
+    std::cout<< std::endl;
+    std::cout << std::endl;
+
+    std::cout << " -------------------------------------------"<<std::endl;
+    std::cout << "|         Que comience el juego             |"<<std::endl;
+    std::cout << " -------------------------------------------"<<std::endl;
+
+    pid_t pid1, pid2;
+
+    // Crear el primer proceso hijo
+    pid1 = fork();
+    if (pid1 < 0) {
+        // Error al crear el proceso hijo
+        std::cerr << "Error al crear el primer proceso hijo" << std::endl;
+        return 1;
+    } else if (pid1 == 0) {
+        // Código para el primer proceso hijo (jugador 1)
+        jugador1();
+        return 0;
     }
-    
-    // Código para el proceso padre
-  
-    // Esperar a que ambos procesos hijos terminen
-    int status;
-    waitpid(pid1, &status, 0);
-    waitpid(pid2, &status, 0);
+
+   // Crear el segundo proceso hijo
+    pid2 = fork();
+    if (pid2 < 0) {
+        // Error al crear el segundo proceso hijo
+        std::cerr << "Error al crear el segundo proceso hijo" << std::endl;
+        return 1;
+    } else if (pid2 == 0) {
+        // Código para el segundo proceso hijo (jugador 2)
+        jugador2();
+        return 0;
+    }
+
+    // Esperar a que los procesos hijos terminen
+    waitpid(pid1, nullptr, 0);
+    waitpid(pid2, nullptr, 0);
+
+    // Finalizar el proceso padre
+    std::cout << "Fin del programa" << std::endl;
 
     return 0;
 }
