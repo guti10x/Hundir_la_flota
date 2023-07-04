@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -84,6 +85,8 @@ int cambioCol (int direction,int lastHitCol) {
 }
 
  void jugador1(){
+    std::this_thread::sleep_for(std::chrono::milliseconds(200)); // Esperar antes de empezar a ejecutarse para comprobaciones del main
+
     int tableroJugador2[ROWS][COLS];
 
     // Cargar tablero del jugador 2
@@ -185,19 +188,29 @@ int cambioCol (int direction,int lastHitCol) {
             if (target == 1) {
                 // Disparo al barco --> disparo
                 tableroJugador2[nextRow][nextCol] = 3;  // Marcar como barco hundido
-                std::cout << "Jugador1 - impactado a barco enemigo! [" << nextRow << ", " << nextCol << "]" << std::endl;
+                std::cout << "Jugador1 - ¡¡¡¡¡IMPACTO A BARCO ENEMIGO!!!!!!! [" << nextRow << ", " << nextCol << "]" << std::endl;
 
                 //reajustamos variables ultimo disparo para hacer el siguiente disparo
                 lastHitRow = nextRow;
                 lastHitCol = nextCol;
 
-                 
+                // Obtener el PID del hilo
+                pid_t pid = getpid();
 
+                std::ostringstream oss;
+                oss << pid << ":" << nextRow << "," << nextCol << ":";
+                std::string texto = oss.str();
 
-
-
-
-
+                std::ofstream archivo("intercambio_disparos.txt");
+                
+                if (archivo.is_open()) {
+                    //archivo << texto;
+                    archivo.close();
+                    std::cout << "Jugador1 - registro de impacto guardado" << std::endl;
+                } else {
+                    std::cout << "Jugador1 - registro de impacto NO guardado al no poder abrir el archivo" << std::endl;
+                }
+                
                 // Actualizar la dirección del siguiente disparo
                 direction = (direction + 1) % 4;  // Incrementar en sentido de las agujas del reloj (derecha, abajo, izquierda, arriba)
 
@@ -219,6 +232,8 @@ int cambioCol (int direction,int lastHitCol) {
  }
 
  void jugador2() {
+    std::this_thread::sleep_for(std::chrono::milliseconds(200)); // Esperar antes de empezar a ejecutarse para comprobaciones del main
+
     int tableroJugador1[ROWS][COLS];
 
     // Cargar tablero del jugador 2
@@ -320,16 +335,27 @@ int cambioCol (int direction,int lastHitCol) {
             if (target == 1) {
                 // Disparo al barco --> disparo
                 tableroJugador1[nextRow][nextCol] = 3;  // Marcar como barco hundido
-                std::cout << "Jugador2 - impactado a barco enemigo! [" << nextRow << ", " << nextCol << "]" << std::endl;
+                std::cout << "Jugador2 - ¡¡¡¡¡IMPACTO A BARCO ENEMIGO!!!!! [" << nextRow << ", " << nextCol << "]" << std::endl;
 
                 //reajustamos variables ultimo disparo para hacer el siguiente disparo
                 lastHitRow = nextRow;
                 lastHitCol = nextCol;
 
+                // Obtener el PID del hilo
+                pid_t pid = getpid();
 
+                std::ostringstream oss;
+                oss << pid << ":" << nextRow << "," << nextCol << ":";
+                std::string texto = oss.str();
 
-
-
+                std::ofstream archivo("intercambio_disparos.txt");
+                if (archivo.is_open()) {
+                    archivo << texto;
+                    archivo.close();
+                    std::cout << "Jugador2 - registro de impacto guardado" << std::endl;
+                } else {
+                    std::cout << "Jugador2 - registro de impacto NO guardado al no poder abrir el archivo" << std::endl;
+                }
 
                 // Actualizar la dirección del siguiente disparo
                 direction = (direction + 1) % 4;  // Incrementar en sentido de las agujas del reloj (derecha, abajo, izquierda, arriba)
@@ -351,6 +377,10 @@ int cambioCol (int direction,int lastHitCol) {
         }
  }
 int main() {
+    std::cout << " -------------------------------------------"<<std::endl;
+    std::cout << "|             HUNDIR LA FLOTA              |"<<std::endl;
+    std::cout << " -------------------------------------------"<<std::endl;
+
     int tableroJugador1[ROWS][COLS];
     int tableroJugador2[ROWS][COLS];
 
@@ -388,7 +418,6 @@ int main() {
     } else {
         std::cout << "Error al crear el hilo 1." << std::endl;
     }
-
     if (hilo2.joinable()) {
         std::cout << "Hilo 2 creado correctamente." << std::endl;
     } else {
