@@ -261,14 +261,14 @@ int cambioCol (int direction,int lastHitCol) {
                 // Obtener el PID del hilo
                 std::thread::id thread_id = std::this_thread::get_id();
 
- /*               // Adquirir el cerrojo del mutex
+                // Adquirir el cerrojo del mutex
                 std::unique_lock<std::mutex> lock(smf);  
 
                 // Esperar hasta que no haya escritura en curso
                 cv.wait(lock, [] { return !isWriting; });
 
                 isWriting = true;  // Indicar que se está realizando una escritura
-*/
+
                 // Realizar la escritura en el archivo
                 std::ostringstream oss;
                 oss << thread_id << ":" << nextRow << "," << nextCol << ":";
@@ -284,13 +284,13 @@ int cambioCol (int direction,int lastHitCol) {
                     std::cout << "Jugador1 - registro de impacto NO guardado al no poder abrir el archivo" << std::endl;
                 }
 
-/*
+
                 // Indicar que la escritura ha finalizado
                 isWriting = false;  
 
                 // Notificar a todas las hebras que la escritura ha terminado
                 cv.notify_all(); 
- */               
+               
                 // Actualizar la dirección del siguiente disparo
                 direction = (direction + 1) % 4;  // Incrementar en sentido de las agujas del reloj (derecha, abajo, izquierda, arriba)
 
@@ -424,14 +424,14 @@ int cambioCol (int direction,int lastHitCol) {
                 // Obtener el PID del hilo
                 std::thread::id thread_id = std::this_thread::get_id();
 
-   /*             // Adquirir el cerrojo del mutex
+                // Adquirir el cerrojo del mutex
                 std::unique_lock<std::mutex> lock(smf);  
 
                 // Esperar hasta que no haya escritura en curso
                 cv.wait(lock, [] { return !isWriting; });
 
                 isWriting = true;  // Indicar que se está realizando una escritura
-*/              
+             
                 // Realizar la escritura en el archivo
                 std::ostringstream oss;
                 oss << thread_id << ":" << nextRow << "," << nextCol << ":";
@@ -447,13 +447,13 @@ int cambioCol (int direction,int lastHitCol) {
                     std::cout << "Jugador1 - registro de impacto NO guardado al no poder abrir el archivo" << std::endl;
                 }
 
-/*
+
                 // Indicar que la escritura ha finalizado
                 isWriting = false;  
 
                 // Notificar a todas las hebras que la escritura ha terminado
                 cv.notify_all();  
-*/
+
                 // Actualizar la dirección del siguiente disparo
                 direction = (direction + 1) % 4;  // Incrementar en sentido de las agujas del reloj (derecha, abajo, izquierda, arriba)
 
