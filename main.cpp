@@ -9,9 +9,17 @@
 #include <ctime>
 #include <iomanip>
 #include <string>
+#include <mutex>
+#include <condition_variable>
 
 const int ROWS = 8;
 const int COLS = 8;
+
+std::mutex smf;
+std::condition_variable cv;
+bool isWriting = false;
+// Declaración del semáforo
+std::mutex semaphore; 
 
 void cargarTablero(const std::string& archivo, int tablero[ROWS][COLS]) {
     std::ifstream archivoTablero(archivo);
@@ -162,7 +170,7 @@ int cambioCol (int direction,int lastHitCol) {
         bool estadoJuego = true;
         while (estadoJuego= true ){
             // Generar timepo de disparo aleatorio
-            std::uniform_int_distribution<> waitDist(0, 10);
+            std::uniform_int_distribution<> waitDist(0, 5);
             int waitTime = waitDist(gen);
             std::cout << "Jugador1 - tiempo para sigueinte disparo: " <<waitTime<< std::endl;
             sleep(waitTime);
@@ -251,22 +259,38 @@ int cambioCol (int direction,int lastHitCol) {
                 lastHitCol = nextCol;
 
                 // Obtener el PID del hilo
-                pid_t pid = getpid();
+                std::thread::id thread_id = std::this_thread::get_id();
 
+ /*               // Adquirir el cerrojo del mutex
+                std::unique_lock<std::mutex> lock(smf);  
+
+                // Esperar hasta que no haya escritura en curso
+                cv.wait(lock, [] { return !isWriting; });
+
+                isWriting = true;  // Indicar que se está realizando una escritura
+*/
+                // Realizar la escritura en el archivo
                 std::ostringstream oss;
-                oss << pid << ":" << nextRow << "," << nextCol << ":";
+                oss << thread_id << ":" << nextRow << "," << nextCol << ":";
                 std::string texto = oss.str();
 
-                std::ofstream archivo("intercambio_disparos.txt");
-                
+                std::ofstream archivo("intercambio_disparos.txt", std::ios::app); // Abrir en modo de anexado (append)
+
                 if (archivo.is_open()) {
-                    //archivo << texto;
+                    archivo << texto << "\n"; // Agregar nueva línea al final
                     archivo.close();
                     std::cout << "Jugador1 - registro de impacto guardado" << std::endl;
                 } else {
                     std::cout << "Jugador1 - registro de impacto NO guardado al no poder abrir el archivo" << std::endl;
                 }
-                
+
+/*
+                // Indicar que la escritura ha finalizado
+                isWriting = false;  
+
+                // Notificar a todas las hebras que la escritura ha terminado
+                cv.notify_all(); 
+ */               
                 // Actualizar la dirección del siguiente disparo
                 direction = (direction + 1) % 4;  // Incrementar en sentido de las agujas del reloj (derecha, abajo, izquierda, arriba)
 
@@ -309,7 +333,7 @@ int cambioCol (int direction,int lastHitCol) {
         bool estadoJuego = true;
         while (estadoJuego= true ){
             // Generar timepo de disparo aleatorio
-            std::uniform_int_distribution<> waitDist(0, 10);
+            std::uniform_int_distribution<> waitDist(0, 5);
             int waitTime = waitDist(gen);
             std::cout << "Jugador2 - tiempo para sigueinte disparo: " <<waitTime<< std::endl;
             sleep(waitTime);
@@ -398,21 +422,38 @@ int cambioCol (int direction,int lastHitCol) {
                 lastHitCol = nextCol;
 
                 // Obtener el PID del hilo
-                pid_t pid = getpid();
+                std::thread::id thread_id = std::this_thread::get_id();
 
+   /*             // Adquirir el cerrojo del mutex
+                std::unique_lock<std::mutex> lock(smf);  
+
+                // Esperar hasta que no haya escritura en curso
+                cv.wait(lock, [] { return !isWriting; });
+
+                isWriting = true;  // Indicar que se está realizando una escritura
+*/              
+                // Realizar la escritura en el archivo
                 std::ostringstream oss;
-                oss << pid << ":" << nextRow << "," << nextCol << ":";
+                oss << thread_id << ":" << nextRow << "," << nextCol << ":";
                 std::string texto = oss.str();
 
-                std::ofstream archivo("intercambio_disparos.txt");
+                std::ofstream archivo("intercambio_disparos.txt", std::ios::app); // Abrir en modo de anexado (append)
+
                 if (archivo.is_open()) {
-                    archivo << texto;
+                    archivo << texto << "\n"; // Agregar nueva línea al final
                     archivo.close();
-                    std::cout << "Jugador2 - registro de impacto guardado" << std::endl;
+                    std::cout << "Jugador1 - registro de impacto guardado" << std::endl;
                 } else {
-                    std::cout << "Jugador2 - registro de impacto NO guardado al no poder abrir el archivo" << std::endl;
+                    std::cout << "Jugador1 - registro de impacto NO guardado al no poder abrir el archivo" << std::endl;
                 }
 
+/*
+                // Indicar que la escritura ha finalizado
+                isWriting = false;  
+
+                // Notificar a todas las hebras que la escritura ha terminado
+                cv.notify_all();  
+*/
                 // Actualizar la dirección del siguiente disparo
                 direction = (direction + 1) % 4;  // Incrementar en sentido de las agujas del reloj (derecha, abajo, izquierda, arriba)
 
@@ -464,7 +505,9 @@ int main() {
     std::cout << "|         Que comience el juego             |"<<std::endl;
     std::cout << " -------------------------------------------"<<std::endl;
 
-    // Defiimos archivo donde se almacenarán los disparos exitosos de ambos jugadores realizados
+    // Creamos archivo donde se almacenarán los disparos exitosos de ambos jugadores realizados
+    std::remove("intercambio_disparos.txt");
+    std::ofstream archivo("intercambio_disparos.txt"); // Crear el archivo
     std::string log_intercambio_disparos = "intercambio_disparos.txt";
 
     // Crear los hilos y lanzar las funciones
@@ -477,12 +520,12 @@ int main() {
 
     // Verificar si los hilos se han creado correctamente
     if (hilo1.joinable()) {
-        std::cout << "Hilo 1 con PID " << threadId1<<" creado correctamente." << std::endl;
+        std::cout << "Hilo 1 con PID " << threadId1<<"creado correctamente." << std::endl;
     } else {
         std::cout << "Error al crear el hilo 1." << std::endl;
     }
     if (hilo2.joinable()) {
-        std::cout << "Hilo 2 con PID " << threadId1<<" creado correctamente." << std::endl;
+        std::cout << "Hilo 2 con PID " << threadId2 <<" creado correctamente." << std::endl;
     } else {
         std::cout << "Error al crear el hilo 2." << std::endl;
     }
