@@ -6,6 +6,9 @@
 #include <sys/wait.h>
 #include <random>
 #include <thread>
+#include <ctime>
+#include <iomanip>
+#include <string>
 
 const int ROWS = 8;
 const int COLS = 8;
@@ -49,6 +52,31 @@ bool todosBarcosHundidos(const int tablero[ROWS][COLS]) {
     return true;
 }
 
+std::string fechaActual() {
+    // Obtener la fecha y hora actual
+    std::time_t now = std::time(nullptr);
+
+    // Convertir la fecha y hora en una estructura tm
+    std::tm* timeinfo = std::localtime(&now);
+
+    // Obtener los componentes de la fecha y hora
+    int year = timeinfo->tm_year + 1900;   // Año actual
+    int month = timeinfo->tm_mon + 1;      // Mes actual
+    int day = timeinfo->tm_mday;           // Día actual
+    int hour = timeinfo->tm_hour;          // Hora actual
+    int minute = timeinfo->tm_min;         // Minuto actual
+
+    // Construir el string de la fecha y hora en el formato deseado
+    std::stringstream ss;
+    ss << std::setw(4) << std::setfill('0') << year << "-"
+       << std::setw(2) << std::setfill('0') << month << "-"
+       << std::setw(2) << std::setfill('0') << day << " "
+       << std::setw(2) << std::setfill('0') << hour << ":"
+       << std::setw(2) << std::setfill('0') << minute;
+
+    // Devolver el string de la fecha y hora
+    return ss.str();
+}
 
 int cambioRow(int direction,int lastHitRow) {
          if (direction == 1) {
@@ -412,18 +440,25 @@ int main() {
     std::thread hilo1(jugador1);
     std::thread hilo2(jugador2);
 
+    // Obtener el PID del hilo
+    std::thread::id threadId1 = hilo1.get_id();
+    std::thread::id threadId2 = hilo2.get_id();
+
     // Verificar si los hilos se han creado correctamente
     if (hilo1.joinable()) {
-        std::cout << "Hilo 1 creado correctamente." << std::endl;
+        std::cout << "Hilo 1 con PID " << threadId1<<" creado correctamente." << std::endl;
     } else {
         std::cout << "Error al crear el hilo 1." << std::endl;
     }
     if (hilo2.joinable()) {
-        std::cout << "Hilo 2 creado correctamente." << std::endl;
+        std::cout << "Hilo 2 con PID " << threadId1<<" creado correctamente." << std::endl;
     } else {
         std::cout << "Error al crear el hilo 2." << std::endl;
     }
 
+    std::string fecha = fechaActual();
+    std::cout << "Fecha y hora actual: " << fecha << std::endl;
+    
     // Esperar a que los hilos terminen su ejecución
     hilo1.join();
     hilo2.join();
