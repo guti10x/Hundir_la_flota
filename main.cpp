@@ -78,6 +78,34 @@ std::string fechaActual() {
     return ss.str();
 }
 
+void copiarArchivo(const std::string& archivoOriginal,  const std::thread::id& pidHijo1,  const std::thread::id& pidHijo2) {
+    std::ifstream input(archivoOriginal);
+    if (!input) {
+        std::cerr << "No se pudo abrir el archivo original." << std::endl;
+        return;
+    }
+
+    std::stringstream ss;
+    ss << "batalla " << pidHijo1 << " vs " << pidHijo2 << "." << fechaActual() << ".txt";
+    std::string archivoCopia = ss.str();
+
+    std::ofstream output(archivoCopia);
+    if (!output) {
+        std::cerr << "No se pudo crear el archivo de copia." << std::endl;
+        return;
+    }
+
+    std::string linea;
+    while (std::getline(input, linea)) {
+        output << linea << std::endl;
+    }
+
+    input.close();
+    output.close();
+
+    std::cout << "Se ha creado una copia del archivo con el nombre: " << archivoCopia << std::endl;
+}
+
 int cambioRow(int direction,int lastHitRow) {
          if (direction == 1) {
                 // Disparo hacia la derecha
@@ -244,7 +272,7 @@ int cambioCol (int direction,int lastHitCol) {
 
                 // Verificar si se hundieron todos los barcos del oponente
                 if (todosBarcosHundidos(tableroJugador2)) {
-                    std::cout << "Jugador 1 ha ganado!" << std::endl;
+                    std::cout << "!!!!!Jugador 1 ha hundido todos los barcos del enemigo!!!!!" << std::endl;
                     estadoJuego = false;
                 }
             } else if (target == 0) {
@@ -390,7 +418,7 @@ int cambioCol (int direction,int lastHitCol) {
 
                 // Verificar si se hundieron todos los barcos del oponente
                 if (todosBarcosHundidos(tableroJugador1)) {
-                    std::cout << "Jugador 2 ha ganado!" << std::endl;
+                    std::cout << "!!!!!Jugador 2 ha hundido todos los barcos del enemigo!!!!!" << std::endl;
                     estadoJuego = false;
                 }
             } else if(target == 0) {
@@ -436,6 +464,9 @@ int main() {
     std::cout << "|         Que comience el juego             |"<<std::endl;
     std::cout << " -------------------------------------------"<<std::endl;
 
+    // Defiimos archivo donde se almacenarán los disparos exitosos de ambos jugadores realizados
+    std::string log_intercambio_disparos = "intercambio_disparos.txt";
+
     // Crear los hilos y lanzar las funciones
     std::thread hilo1(jugador1);
     std::thread hilo2(jugador2);
@@ -462,6 +493,9 @@ int main() {
     // Esperar a que los hilos terminen su ejecución
     hilo1.join();
     hilo2.join();
+
+    //Se realiza copia del archivo de los impactos realizados por ambos jugador
+    copiarArchivo(log_intercambio_disparos, threadId2, threadId2);
 
     // Finalizar el proceso padre
     std::cout << "Fin del programa" << std::endl;
