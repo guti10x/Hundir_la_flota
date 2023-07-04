@@ -36,6 +36,7 @@ void imprimirTablero(const int tablero[ROWS][COLS]) {
         std::cout << std::endl;
     }
 }
+
 bool todosBarcosHundidos(const int tablero[ROWS][COLS]) {
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLS; j++) {
@@ -65,6 +66,7 @@ int cambioRow(int direction,int lastHitRow) {
                 return lastHitRow - 1;
             }
 }
+
 int cambioCol (int direction,int lastHitCol) {
          if (direction == 1) {
                 // Disparo hacia la derecha
@@ -185,8 +187,11 @@ int cambioCol (int direction,int lastHitCol) {
                 tableroJugador2[nextRow][nextCol] = 3;  // Marcar como barco hundido
                 std::cout << "Jugador1 - impactado a barco enemigo! [" << nextRow << ", " << nextCol << "]" << std::endl;
 
+                //reajustamos variables ultimo disparo para hacer el siguiente disparo
                 lastHitRow = nextRow;
                 lastHitCol = nextCol;
+
+                 
 
 
 
@@ -317,6 +322,7 @@ int cambioCol (int direction,int lastHitCol) {
                 tableroJugador1[nextRow][nextCol] = 3;  // Marcar como barco hundido
                 std::cout << "Jugador2 - impactado a barco enemigo! [" << nextRow << ", " << nextCol << "]" << std::endl;
 
+                //reajustamos variables ultimo disparo para hacer el siguiente disparo
                 lastHitRow = nextRow;
                 lastHitCol = nextCol;
 
@@ -372,6 +378,33 @@ int main() {
     std::cout << "|         Que comience el juego             |"<<std::endl;
     std::cout << " -------------------------------------------"<<std::endl;
 
+    // Crear los hilos y lanzar las funciones
+    std::thread hilo1(jugador1);
+    std::thread hilo2(jugador2);
+
+    // Verificar si los hilos se han creado correctamente
+    if (hilo1.joinable()) {
+        std::cout << "Hilo 1 creado correctamente." << std::endl;
+    } else {
+        std::cout << "Error al crear el hilo 1." << std::endl;
+    }
+
+    if (hilo2.joinable()) {
+        std::cout << "Hilo 2 creado correctamente." << std::endl;
+    } else {
+        std::cout << "Error al crear el hilo 2." << std::endl;
+    }
+
+    // Esperar a que los hilos terminen su ejecución
+    hilo1.join();
+    hilo2.join();
+
+    // Finalizar el proceso padre
+    std::cout << "Fin del programa" << std::endl;
+
+    return 0;
+
+    /* LANZAR HIJOS CON PROCESOS
     pid_t pid1, pid2;
 
     // Crear el primer proceso hijo
@@ -401,9 +434,5 @@ int main() {
     // Esperar a que los procesos hijos terminen
     waitpid(pid1, nullptr, 0);
     waitpid(pid2, nullptr, 0);
-
-    // Finalizar el proceso padre
-    std::cout << "Fin del programa" << std::endl;
-
-    return 0;
+    */
 }
