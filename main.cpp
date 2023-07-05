@@ -12,16 +12,40 @@
 #include <mutex>
 #include <condition_variable>
 
-const int ROWS = 8;
-const int COLS = 8;
+int contarFilas() {
+    std::ifstream archivo("tablero_jugador1.txt");
+    std::string linea;
+    int numFilas = 0;
 
-std::mutex smf;
-std::condition_variable cv;
-bool isWriting = false;
-// Declaración del semáforo
-std::mutex semaphore; 
+    while (std::getline(archivo, linea)) {
+        numFilas++;
+    }
 
-void cargarTablero(const std::string& archivo, int tablero[ROWS][COLS]) {
+    archivo.close();
+
+    return numFilas;
+}
+
+int contarColumnas() {
+    std::ifstream archivo("tablero_jugador1.txt");
+    std::string linea;
+    int numColumnas = 0;
+
+    if (std::getline(archivo, linea)) {
+        numColumnas = linea.length();
+    }
+
+    archivo.close();
+
+    return numColumnas;
+}
+
+int tableroJugador1[1][1];
+int tableroJugador2[1][1];
+
+ void cargarTablero1(const std::string& archivo) {
+    int cols=contarColumnas();
+    int rows=contarFilas();
     std::ifstream archivoTablero(archivo);
 
     if (!archivoTablero) {
@@ -29,36 +53,90 @@ void cargarTablero(const std::string& archivo, int tablero[ROWS][COLS]) {
         exit(1);
     }
 
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLS; j++) {
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
             char c;
             archivoTablero >> c;
-            tablero[i][j] = c - '0';
+            tableroJugador1[i][j] = c - '0';
+        }
+    }
+
+    archivoTablero.close();
+}
+void cargarTablero2(const std::string& archivo) {
+    int cols=contarColumnas();
+    int rows=contarFilas();
+    std::ifstream archivoTablero(archivo);
+
+    if (!archivoTablero) {
+        std::cout << "No se pudo abrir el archivo del tablero: " << archivo << std::endl;
+        exit(1);
+    }
+
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            char c;
+            archivoTablero >> c;
+            tableroJugador2[i][j] = c - '0';
         }
     }
 
     archivoTablero.close();
 }
 
-void imprimirTablero(const int tablero[ROWS][COLS]) {
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLS; j++) {
-            std::cout << tablero[i][j] << " ";
+void imprimirTablero1() {
+    int cols=contarColumnas();
+    int rows=contarFilas();
+    
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            std::cout << tableroJugador1[i][j] << " ";
         }
         std::cout << std::endl;
     }
 }
 
-bool todosBarcosHundidos(const int tablero[ROWS][COLS]) {
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLS; j++) {
-            if (tablero[i][j] == 1) {
+void imprimirTablero2() {
+    int cols=contarColumnas();
+    int rows=contarFilas();
+    
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            std::cout << tableroJugador2[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+bool todosBarcosHundidos1() {
+    int cols=contarColumnas();
+    int rows=contarFilas();
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            if (tableroJugador1[i][j] == 1) {
                 return false;
             }
         }
     }
     return true;
 }
+bool todosBarcosHundidos2() {
+    int cols=contarColumnas();
+    int rows=contarFilas();
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            if (tableroJugador2[i][j] == 1) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+std::mutex smf;
+std::condition_variable cv;
+bool isWriting = false;
+// Declaración del semáforo
+std::mutex semaphore; 
 
 std::string fechaActual() {
     // Obtener la fecha y hora actual
@@ -153,10 +231,14 @@ int cambioRow(int direction,int lastHitRow) {
  void jugador1(){
     std::this_thread::sleep_for(std::chrono::milliseconds(200)); // Esperar antes de empezar a ejecutarse para comprobaciones del main
 
-    int tableroJugador2[ROWS][COLS];
+    int cols=contarColumnas();
+    int rows=contarFilas();
+
+    int tableroJugador1[rows][cols];
+    int tableroJugador2[rows][cols];
 
     // Cargar tablero del jugador 2
-    cargarTablero("tablero_jugador2.txt", tableroJugador2);
+    cargarTablero1("tablero_jugador2.txt");
 
     // Generar fila y columna disparo aleatorio
         std::random_device rd;
@@ -296,7 +378,7 @@ int cambioRow(int direction,int lastHitRow) {
                 direction = (direction + 1) % 4;  // Incrementar en sentido de las agujas del reloj (derecha, abajo, izquierda, arriba)
 
                 // Verificar si se hundieron todos los barcos del oponente
-                if (todosBarcosHundidos(tableroJugador2)) {
+                if (todosBarcosHundidos1()) {
                     std::cout << "!!!!!Jugador 1 ha hundido todos los barcos del enemigo!!!!!" << std::endl;
                     estadoJuego = false;
                 }
@@ -318,10 +400,13 @@ int cambioRow(int direction,int lastHitRow) {
  void jugador2() {
     std::this_thread::sleep_for(std::chrono::milliseconds(200)); // Esperar antes de empezar a ejecutarse para comprobaciones del main
 
-    int tableroJugador1[ROWS][COLS];
+    int cols=contarColumnas();
+    int rows=contarFilas();
+
+    int tableroJugador1[rows][cols];
 
     // Cargar tablero del jugador 2
-    cargarTablero("tablero_jugador1.txt", tableroJugador1);
+    cargarTablero2("tablero_jugador1.txt");
 
     // Generar fila y columna disparo aleatorio
         std::random_device rd;
@@ -461,7 +546,7 @@ int cambioRow(int direction,int lastHitRow) {
                 direction = (direction + 1) % 4;  // Incrementar en sentido de las agujas del reloj (derecha, abajo, izquierda, arriba)
 
                 // Verificar si se hundieron todos los barcos del oponente
-                if (todosBarcosHundidos(tableroJugador1)) {
+                if (todosBarcosHundidos2()) {
                     std::cout << "!!!!!Jugador 2 ha hundido todos los barcos del enemigo!!!!!" << std::endl;
                     estadoJuego = false;
                 }
@@ -480,32 +565,38 @@ int cambioRow(int direction,int lastHitRow) {
             }   
         }
  }
+
 int main() {
     std::cout << " -----------------------------------------------------------"<<std::endl;
     std::cout << "|                     HUNDIR LA FLOTA                        |"<<std::endl;
     std::cout << " -----------------------------------------------------------"<<std::endl;
     std::cout << std::endl;
-
-    int tableroJugador1[ROWS][COLS];
-    int tableroJugador2[ROWS][COLS];
-
+   
+    int cols=contarColumnas();
+    int rows=contarFilas();
+    std::cout << cols<<std::endl;
+    std::cout << rows<<std::endl;
+   
+  /*   int tableroJugador1[rows][cols];
+    int tableroJugador2[rows][cols];
+*/
     // Cargar tablero del jugador 1
-    cargarTablero("tablero_jugador1.txt", tableroJugador1);
+    cargarTablero1("tablero_jugador1.txt");
 
     // Cargar tablero del jugador 2
-    cargarTablero("tablero_jugador2.txt", tableroJugador2);
+    cargarTablero2("tablero_jugador2.txt");
 
     // Mostrar tablero del jugador 1
     std::cout << "Tablero del jugador 1:" << std::endl;
     std::cout << std::endl;
-    imprimirTablero(tableroJugador1);
+    imprimirTablero1();
     std::cout<< std::endl;
     std::cout << std::endl;
 
     // Mostrar tablero del jugador 2
     std::cout << "Tablero del jugador 2:" << std::endl;
     std::cout << std::endl;
-    imprimirTablero(tableroJugador2);
+    imprimirTablero2();
     std::cout<< std::endl;
     std::cout << std::endl;
 

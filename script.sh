@@ -1,13 +1,17 @@
 #!/bin/bash
 
 tablero1() {
-    Pedir el número de filas
-    echo "Ingrese el número de filas:"
+    while true; do
+    echo "Ingrese el número de filas (mínimo 5):"
     read filas
 
-    # Pedir el número de columnas
-    echo "Ingrese el número de columnas:"
+    echo "Ingrese el número de columnas (mínimo 5):"
     read columnas
+
+    if (( filas >= 5 && columnas >= 5 )); then
+        break
+    fi
+    done
 
     # Crear una matriz vacía
     matriz=()
@@ -38,13 +42,17 @@ tablero1() {
 }
 
 tablero2() {
-    Pedir el número de filas
-    echo "Ingrese el número de filas:"
+    while true; do
+    echo "Ingrese el número de filas (mínimo 5):"
     read filas
 
-    # Pedir el número de columnas
-    echo "Ingrese el número de columnas:"
+    echo "Ingrese el número de columnas (mínimo 5):"
     read columnas
+
+    if (( filas >= 5 && columnas >= 5)); then
+        break
+    fi
+    done
 
     # Crear una matriz vacía
     matriz=()
