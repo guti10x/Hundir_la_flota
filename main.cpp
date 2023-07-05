@@ -170,7 +170,7 @@ int cambioCol (int direction,int lastHitCol) {
         bool estadoJuego = true;
         while (estadoJuego= true ){
             // Generar timepo de disparo aleatorio
-            std::uniform_int_distribution<> waitDist(0, 5);
+            std::uniform_int_distribution<> waitDist(0,10);
             int waitTime = waitDist(gen);
             std::cout << "Jugador1 - tiempo para sigueinte disparo: " <<waitTime<< std::endl;
             sleep(waitTime);
@@ -284,7 +284,6 @@ int cambioCol (int direction,int lastHitCol) {
                     std::cout << "Jugador1 - registro de impacto NO guardado al no poder abrir el archivo" << std::endl;
                 }
 
-
                 // Indicar que la escritura ha finalizado
                 isWriting = false;  
 
@@ -299,12 +298,15 @@ int cambioCol (int direction,int lastHitCol) {
                     std::cout << "!!!!!Jugador 1 ha hundido todos los barcos del enemigo!!!!!" << std::endl;
                     estadoJuego = false;
                 }
+                // Espera 2 segundos antes del siguiente disparo
+                std::this_thread::sleep_for(std::chrono::seconds(2));
+
             } else if (target == 0) {
-                //  Disparo al agua --> disparo aleatorio
+                // Disparo al agua --> disparo aleatorio
                 direction = 0;
                 std::cout << "Jugador1 - disparo al agua!" << std::endl;
             } else if(target == 3) {
-                //  Disparo al agua --> disparo aleatorio
+                // Disparo al agua --> disparo aleatorio
                 direction = 0;
                 std::cout << "Jugador2 - disparo al agua!" << std::endl;
             }   
@@ -333,7 +335,7 @@ int cambioCol (int direction,int lastHitCol) {
         bool estadoJuego = true;
         while (estadoJuego= true ){
             // Generar timepo de disparo aleatorio
-            std::uniform_int_distribution<> waitDist(0, 5);
+            std::uniform_int_distribution<> waitDist(0,10);
             int waitTime = waitDist(gen);
             std::cout << "Jugador2 - tiempo para sigueinte disparo: " <<waitTime<< std::endl;
             sleep(waitTime);
@@ -447,7 +449,6 @@ int cambioCol (int direction,int lastHitCol) {
                     std::cout << "Jugador1 - registro de impacto NO guardado al no poder abrir el archivo" << std::endl;
                 }
 
-
                 // Indicar que la escritura ha finalizado
                 isWriting = false;  
 
@@ -462,21 +463,26 @@ int cambioCol (int direction,int lastHitCol) {
                     std::cout << "!!!!!Jugador 2 ha hundido todos los barcos del enemigo!!!!!" << std::endl;
                     estadoJuego = false;
                 }
+                
+                // Espera dos segundos antes del siguiente disparo
+                std::this_thread::sleep_for(std::chrono::seconds(2));
+
             } else if(target == 0) {
-                //  Disparo al agua --> disparo aleatorio
+                // Disparo al agua --> disparo aleatorio
                 direction = 0;
                 std::cout << "Jugador2 - disparo al agua!" << std::endl;
             } else if(target == 3) {
-                //  Disparo al agua --> disparo aleatorio
+                // Disparo al agua --> disparo aleatorio
                 direction = 0;
                 std::cout << "Jugador2 - disparo al agua!" << std::endl;
             }   
         }
  }
 int main() {
-    std::cout << " -------------------------------------------"<<std::endl;
-    std::cout << "|             HUNDIR LA FLOTA              |"<<std::endl;
-    std::cout << " -------------------------------------------"<<std::endl;
+    std::cout << " -----------------------------------------------------------"<<std::endl;
+    std::cout << "|                     HUNDIR LA FLOTA                        |"<<std::endl;
+    std::cout << " -----------------------------------------------------------"<<std::endl;
+    std::cout << std::endl;
 
     int tableroJugador1[ROWS][COLS];
     int tableroJugador2[ROWS][COLS];
@@ -501,9 +507,10 @@ int main() {
     std::cout<< std::endl;
     std::cout << std::endl;
 
-    std::cout << " -------------------------------------------"<<std::endl;
-    std::cout << "|         Que comience el juego             |"<<std::endl;
-    std::cout << " -------------------------------------------"<<std::endl;
+    std::cout << " -----------------------------------------------------------"<<std::endl;
+    std::cout << "|                  Que comience el juego                    |"<<std::endl;
+    std::cout << " -----------------------------------------------------------"<<std::endl;
+    std::cout << std::endl;
 
     // Creamos archivo donde se almacenarán los disparos exitosos de ambos jugadores realizados
     std::remove("intercambio_disparos.txt");
@@ -530,9 +537,6 @@ int main() {
         std::cout << "Error al crear el hilo 2." << std::endl;
     }
 
-    std::string fecha = fechaActual();
-    std::cout << "Fecha y hora actual: " << fecha << std::endl;
-    
     // Esperar a que los hilos terminen su ejecución
     hilo1.join();
     hilo2.join();
