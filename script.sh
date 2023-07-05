@@ -91,6 +91,23 @@ compilar() {
 
 }
 
+lanzar_programa() {
+    #compilar
+        local archivo_cpp="main.cpp"
+        echo "Compilando el archivo $archivo_cpp..."
+        g++ -o ejecutable $archivo_cpp
+        echo "Compilación completada."
+    #ejecutar programa
+
+        if [ -f "ejecutable" ]; then
+            echo "Ejecutando el programa...``"
+            #gnome-terminal -- ./ejecutable
+            #xterm -e ./ejecutable & 
+            ./ejecutable 
+        
+        fi
+}
+
 # Menú de opciones
 while true; do
     echo " -----------------------------------------------------------"
@@ -119,11 +136,9 @@ while true; do
             compilar
             ;;
         4)
-            compilar
+            lanzar_programa  
             ;;
-        5)
-            compilar
-            ;;
+
         0)
             echo "Saliendo..."
             break
