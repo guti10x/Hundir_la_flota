@@ -114,38 +114,40 @@ void copiarArchivo(const std::string& archivoOriginal,  const std::thread::id& p
     std::cout << "Se ha creado una copia del archivo con el nombre: " << archivoCopia << std::endl;
 }
 
-int cambioRow(int direction,int lastHitRow) {
-         if (direction == 1) {
-                // Disparo hacia la derecha
-                return lastHitRow; 
-            } else if (direction == 2) {
-                // Disparo hacia abajo
-                return lastHitRow + 1;
-                
-            } else if (direction == 3) {
-                // Disparo hacia la izquierda
-                return lastHitRow;
-                
-            } else if (direction == 4) {
-                // Disparo hacia arriba
-                return lastHitRow - 1;
-            }
+int cambioCol (int direction,int lastHitCol) {
+    if (direction == 1) {
+        // Disparo hacia la derecha
+        return lastHitCol + 1;
+        } else if (direction == 2) {
+            // Disparo hacia abajo
+            return lastHitCol;
+        } else if (direction == 3) {
+            // Disparo hacia la izquierda
+            return lastHitCol - 1;
+        } else if (direction == 4) {
+            // Disparo hacia arriba
+        return lastHitCol;
+    }
+    return 0;
 }
 
-int cambioCol (int direction,int lastHitCol) {
-         if (direction == 1) {
-                // Disparo hacia la derecha
-                return lastHitCol + 1;
-            } else if (direction == 2) {
-                // Disparo hacia abajo
-                return lastHitCol;
-            } else if (direction == 3) {
-                // Disparo hacia la izquierda
-                return lastHitCol - 1;
-            } else if (direction == 4) {
-                // Disparo hacia arriba
-                return lastHitCol;
-            }
+int cambioRow(int direction,int lastHitRow) {
+    if (direction == 1) {
+        // Disparo hacia la derecha
+        return lastHitRow; 
+    } else if (direction == 2) {
+        // Disparo hacia abajo
+        return lastHitRow + 1;
+                
+    } else if (direction == 3) {
+        // Disparo hacia la izquierda
+        return lastHitRow;
+                
+    } else if (direction == 4) {
+        // Disparo hacia arriba
+        return lastHitRow - 1;
+    }     
+    return 0;
 }
 
  void jugador1(){
