@@ -46,6 +46,13 @@ std::vector<std::vector<int>> tableroJugador2;
 
 std::string rutaTablero1="tablero_jugador1.txt";
 std::string rutaTablero2="tablero_jugador2.txt";
+std::string rutaLogIntercambioDisparos="intercambio_disparos.txt";
+
+std::mutex smf;
+std::condition_variable cv;
+bool isWriting = false;
+// Declaración del semáforo
+std::mutex semaphore; 
 
 void cargarTablero1() {
     std::ifstream archivo(rutaTablero1);
@@ -127,11 +134,57 @@ bool todosBarcosHundidos2() {
     return true;
 }
 
-std::mutex smf;
-std::condition_variable cv;
-bool isWriting = false;
-// Declaración del semáforo
-std::mutex semaphore; 
+void comprobarWin() {
+    std::fstream archivo(rutaLogIntercambioDisparos, std::ios::in | std::ios::out);
+    if (!archivo.is_open()) {
+        std::cout << "No se pudo abrir el archivo." << std::endl;
+        return;
+    }
+
+    std::string linea;
+    std::streampos posicion;
+
+    while (std::getline(archivo, linea)) {
+        if (linea.find("OVER") != std::string::npos) {
+            posicion = archivo.tellg();
+        }
+    }
+
+    // Obtener el PID del hilo
+    std::thread::id thread_id = std::this_thread::get_id();
+
+    // Adquirir el cerrojo del mutex
+    std::unique_lock<std::mutex> lock(smf);  
+
+    // Esperar hasta que no haya escritura en curso
+    cv.wait(lock, [] { return !isWriting; });
+
+    isWriting = true;  // Indicar que se está realizando una escritura
+             
+    // Realizar la escritura en el archivo
+    std::ostringstream oss;
+    oss << thread_id << " :WIN";
+    std::string texto = oss.str();
+
+    std::ofstream archivo2("intercambio_disparos.txt", std::ios::app); // Abrir en modo de anexado (append)
+
+    if (archivo2.is_open()) {
+        archivo2 << texto << "\n"; // Agregar nueva línea al final
+        archivo2.close();
+        std::cout << "Jugador1 - registro de fin de juego guardado" << std::endl;
+    } else {
+        std::cout << "Jugador1 - registro de fin de juego NO guardado al no poder abrir el archivo" << std::endl;
+    }
+
+    // Indicar que la escritura ha finalizado
+    isWriting = false;  
+
+    // Notificar a todas las hebras que la escritura ha terminado
+    cv.notify_all();
+
+    // Forzar finalizaci'on del hilo
+    std::terminate();
+}
 
 std::string fechaActual() {
     // Obtener la fecha y hora actual
@@ -320,9 +373,10 @@ int cambioRow(int direction,int lastHitRow) {
         }
 
         // Realizar disparo    
-        std::cout << nextRow<<nextCol<<" "<<rows<<cols<<std::endl;               
+        std::cout << nextRow<<nextCol<<" "<<rows<<cols<<std::endl; 
+        imprimirTablero2();              
         int target = tableroJugador2[nextRow][nextCol];
-        //std::cout << "posicio-  "<<target << std::endl; 
+        std::cout << "contenido-  "<<target << std::endl; 
             
         std::cout << "Jugador1 - disparando a [" << nextRow << ", " << nextCol << "]" << std::endl;
         // Procesar el resultado del disparo
@@ -392,7 +446,7 @@ int cambioRow(int direction,int lastHitRow) {
                 std::thread::id thread_id = std::this_thread::get_id();
 
                 // Adquirir el cerrojo del mutex
-                    std::unique_lock<std::mutex> lock(smf);  
+                std::unique_lock<std::mutex> lock(smf);  
 
                 // Esperar hasta que no haya escritura en curso
                 cv.wait(lock, [] { return !isWriting; });
@@ -418,6 +472,9 @@ int cambioRow(int direction,int lastHitRow) {
 
                 // Notificar a todas las hebras que la escritura ha terminado
                 cv.notify_all();
+
+                // Forzar finalizaci'on del hilo
+                std::terminate();
             }else{
                 // Espera 2 segundos antes del siguiente disparo
                 std::this_thread::sleep_for(std::chrono::seconds(2));
@@ -533,9 +590,10 @@ int cambioRow(int direction,int lastHitRow) {
             }
 
             // Realizar disparo                       
-             std::cout << nextRow<<nextCol<<" "<<rows<<cols<<std::endl;                  
+            std::cout << nextRow<<nextCol<<" "<<rows<<cols<<std::endl;  
+            imprimirTablero1();                
             int target = tableroJugador1[nextRow][nextCol];
-            //std::cout << "posicio-  "<<target << std::endl; 
+            std::cout << "contenido-  "<<target << std::endl; 
             
             std::cout << "Jugador2 - disparando a [" << nextRow << ", " << nextCol << "]" << std::endl;
 
@@ -637,7 +695,10 @@ int cambioRow(int direction,int lastHitRow) {
                     isWriting = false;  
 
                     // Notificar a todas las hebras que la escritura ha terminado
-                    //cv.notify_all();  */
+                    cv.notify_all();  
+
+                    // Forzar finalizaci'on del hilo
+                    std::terminate();
                 }else{
                     // Espera 2 segundos antes del siguiente disparo
                     std::this_thread::sleep_for(std::chrono::seconds(2));
