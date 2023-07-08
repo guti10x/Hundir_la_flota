@@ -1,25 +1,25 @@
 #!/bin/bash
 
 tablero1() {
-    while true; do
-    echo "Ingrese el número de filas (mínimo 5):"
-    read filas
+    #while true; do
+    #echo "Ingrese el número de filas (mínimo 5):"
+    #read filas
 
-    echo "Ingrese el número de columnas (mínimo 5):"
-    read columnas
+    #echo "Ingrese el número de columnas (mínimo 5):"
+    #read columnas
 
-    if (( filas >= 5 && columnas >= 5 )); then
-        break
-    fi
-    done
+    #if (( filas >= 5 && columnas >= 5 )); then
+    #   break
+    #fi
+    #done
 
     # Crear una matriz vacía
     matriz=()
 
     # Rellenar la matriz con 0 o 1
-    for ((i=0; i<filas; i++))
+    for ((i=0; i<5; i++))
     do
-        for ((j=0; j<columnas; j++))
+        for ((j=0; j<5; j++))
         do
             echo "Ingrese el valor para la posición [$i][$j] (0 agua 1 barco):"
             read valor
@@ -31,9 +31,9 @@ tablero1() {
     archivo="tablero_jugador1.txt"
     rm -f "$archivo"  # Eliminar el archivo si ya existe
 
-    for ((i=0; i<filas; i++))
+    for ((i=0; i<5; i++))
     do
-        for ((j=0; j<columnas; j++))
+        for ((j=0; j<5; j++))
         do
             echo -n "${matriz[$i,$j]} " >> "$archivo"
         done

@@ -44,6 +44,17 @@ int contarColumnas() {
 std::vector<std::vector<int>> tableroJugador1;
 std::vector<std::vector<int>> tableroJugador2;
 
+int tableroJugadorA1[5][5];
+int tableroJugadorA2[5][5];
+
+void inicializarMatriz() {
+    for (int i = 0; i < 5; i++) {
+        for (int j = 0; j < 5; j++) {
+            tableroJugadorA1[i][j] = tableroJugador1[i][j];
+            tableroJugadorA2[i][j] = tableroJugador2[i][j];
+        }
+    }
+}
 std::string rutaTablero1="tablero_jugador1.txt";
 std::string rutaTablero2="tablero_jugador2.txt";
 std::string rutaLogIntercambioDisparos="intercambio_disparos.txt";
@@ -74,7 +85,7 @@ void cargarTablero1() {
 }
 
 void imprimirTablero1() {
-    for (const auto& fila : tableroJugador1) {
+    for (const auto& fila : tableroJugadorA1) {
         for (int elemento : fila) {
             std::cout << elemento << " ";
         }
@@ -98,12 +109,12 @@ void cargarTablero2() {
         }
         archivo.close();
     } else {
-        std::cout << "No se pudo abrir el archivo de tableroJugador1." << std::endl;
+        std::cout << "No se pudo abrir el archivo de tableroJugador2." << std::endl;
     }
 }
 
 void imprimirTablero2() {
-    for (const auto& fila : tableroJugador2) {
+    for (const auto& fila : tableroJugadorA2) {
         for (int elemento : fila) {
             std::cout << elemento << " ";
         }
@@ -113,7 +124,7 @@ void imprimirTablero2() {
 }
 
 bool todosBarcosHundidos1() {
-    for (const auto& fila : tableroJugador2) {
+    for (const auto& fila : tableroJugadorA2) {
         for (int elemento : fila) {
             if (elemento == 1) {
                 return false;
@@ -124,7 +135,7 @@ bool todosBarcosHundidos1() {
 }
 
 bool todosBarcosHundidos2() {
-    for (const auto& fila : tableroJugador2) {
+    for (const auto& fila : tableroJugadorA2) {
         for (int elemento : fila) {
             if (elemento == 1) {
                 return false;
@@ -373,21 +384,21 @@ int cambioRow(int direction,int lastHitRow) {
         }
 
         // Realizar disparo    
-        std::cout << nextRow<<nextCol<<" "<<rows<<cols<<std::endl; 
-        imprimirTablero2();              
-        int target = tableroJugador2[nextRow][nextCol];
-        std::cout << "contenido-  "<<target << std::endl; 
+        //std::cout << nextRow<<nextCol<<" "<<rows<<cols<<std::endl; 
+        //imprimirTablero2();              
+        int target = tableroJugadorA2[nextRow][nextCol];
+        //std::cout << "contenido-  "<<target << std::endl; 
             
         std::cout << "Jugador1 - disparando a [" << nextRow << ", " << nextCol << "]" << std::endl;
         // Procesar el resultado del disparo
         if (target == 1) {
             // Disparo al barco --> disparo
-              if (tableroJugador1[nextRow][nextCol+1]!=1 && tableroJugador1[nextRow][nextCol-1]!=1 
-                    && tableroJugador1[nextRow+1][nextCol]!=1 && tableroJugador1[nextRow-1][nextCol]!=1){
+              if (tableroJugadorA1[nextRow][nextCol+1]!=1 && tableroJugadorA1[nextRow][nextCol-1]!=1 
+                    && tableroJugadorA1[nextRow+1][nextCol]!=1 && tableroJugadorA1[nextRow-1][nextCol]!=1){
 
                     /* Para barcos en diagonal
-                    && tableroJugador1[nextRow+1][nextCol+1]!=1 && tableroJugador1[nextRow+1][nextCol-1]!=1
-                    && tableroJugador1[nextRow-1][nextCol+1]!=1 && tableroJugador1[nextRow-1][nextCol-1]!=1)
+                    && tableroJugadorA1[nextRow+1][nextCol+1]!=1 && tableroJugadorA1[nextRow+1][nextCol-1]!=1
+                    && tableroJugadorA1[nextRow-1][nextCol+1]!=1 && tableroJugadorA1[nextRow-1][nextCol-1]!=1)
                     */
                     tipoImpacto= "HUNDIDO";
                     std::cout << "Jugador1 - ¡¡¡¡¡ BARCO ENEMIGO HUNDIDO!!!!! [" << nextRow << ", " << nextCol << "]" << std::endl;
@@ -590,10 +601,10 @@ int cambioRow(int direction,int lastHitRow) {
             }
 
             // Realizar disparo                       
-            std::cout << nextRow<<nextCol<<" "<<rows<<cols<<std::endl;  
-            imprimirTablero1();                
-            int target = tableroJugador1[nextRow][nextCol];
-            std::cout << "contenido-  "<<target << std::endl; 
+            //std::cout << nextRow<<nextCol<<" "<<rows<<cols<<std::endl;  
+            //imprimirTablero1();                
+            int target = tableroJugadorA1[nextRow][nextCol];
+            //std::cout << "contenido-  "<<target << std::endl; 
             
             std::cout << "Jugador2 - disparando a [" << nextRow << ", " << nextCol << "]" << std::endl;
 
@@ -601,14 +612,14 @@ int cambioRow(int direction,int lastHitRow) {
             if (target == 1) {
                 // Disparo al barco --> disparo
 
-                std::cout <<tableroJugador1[nextRow][nextCol+1]<< std::endl;
+                std::cout <<tableroJugadorA1[nextRow][nextCol+1]<< std::endl;
                 
-                if (tableroJugador1[nextRow][nextCol+1]!=1 && tableroJugador1[nextRow][nextCol-1]!=1 
-                    && tableroJugador1[nextRow+1][nextCol]!=1 && tableroJugador1[nextRow-1][nextCol]!=1){
+                if (tableroJugadorA1[nextRow][nextCol+1]!=1 && tableroJugadorA1[nextRow][nextCol-1]!=1 
+                    && tableroJugadorA1[nextRow+1][nextCol]!=1 && tableroJugadorA1[nextRow-1][nextCol]!=1){
 
                     /* Para barcos en diagonal
-                    && tableroJugador1[nextRow+1][nextCol+1]!=1 && tableroJugador1[nextRow+1][nextCol-1]!=1
-                    && tableroJugador1[nextRow-1][nextCol+1]!=1 && tableroJugador1[nextRow-1][nextCol-1]!=1)
+                    && tableroJugadorA1[nextRow+1][nextCol+1]!=1 && tableroJugadorA1[nextRow+1][nextCol-1]!=1
+                    && tableroJugadorA1[nextRow-1][nextCol+1]!=1 && tableroJugadorA1[nextRow-1][nextCol-1]!=1)
                     */
                 
                     tipoImpacto= "HUNDIDO";
@@ -618,7 +629,7 @@ int cambioRow(int direction,int lastHitRow) {
                     std::cout << "Jugador2 - ¡¡¡¡¡IMPACTO A BARCO ENEMIGO!!!!! [" << nextRow << ", " << nextCol << "]" << std::endl;
                 }
                     
-                tableroJugador1[nextRow][nextCol] = 3;  // Marcar como barco hundido
+                tableroJugadorA1[nextRow][nextCol] = 3;  // Marcar como barco hundido
                 imprimirTablero1();
 
                 //reajustamos variables ultimo disparo para hacer el siguiente disparo
@@ -734,6 +745,8 @@ int main() {
 
     // Cargar tablero del jugador 2
     cargarTablero2();
+
+    inicializarMatriz();
 
     // Mostrar tablero del jugador 1
     std::cout << "Tablero del jugador 1:" << std::endl;
