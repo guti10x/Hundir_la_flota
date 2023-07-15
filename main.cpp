@@ -156,56 +156,21 @@ bool todosBarcosHundidos2() {
 }
 
 
-void comprobarWin() {
-    std::fstream archivo(rutaLogIntercambioDisparos, std::ios::in | std::ios::out);
-    if (!archivo.is_open()) {
-        std::cout << "No se pudo abrir el archivo." << std::endl;
-        return;
+bool buscarPalabraEnArchivo(const std::string& nombreArchivo) {
+    std::ifstream archivo(rutaLogIntercambioDisparos);
+    if (!archivo) {
+        std::cerr << "Error al abrir el archivo." << std::endl;
+        return false;
     }
 
-    std::string linea;
-    std::streampos posicion;
-
-    while (std::getline(archivo, linea)) {
-        if (linea.find("OVER") != std::string::npos) {
-            posicion = archivo.tellg();
+    std::string palabra;
+    while (archivo >> palabra) {
+        if (palabra == "WIN") {
+            return true;
         }
     }
 
-    // Obtener el PID del hilo
-    std::thread::id thread_id = std::this_thread::get_id();
-
-    // Adquirir el cerrojo del mutex
-    std::unique_lock<std::mutex> lock(smf);  
-
-    // Esperar hasta que no haya escritura en curso
-    cv.wait(lock, [] { return !isWriting; });
-
-    isWriting = true;  // Indicar que se está realizando una escritura
-             
-    // Realizar la escritura en el archivo
-    std::ostringstream oss;
-    oss << thread_id << " :WIN";
-    std::string texto = oss.str();
-
-    std::ofstream archivo2("intercambio_disparos.txt", std::ios::app); // Abrir en modo de anexado (append)
-
-    if (archivo2.is_open()) {
-        archivo2 << texto << "\n"; // Agregar nueva línea al final
-        archivo2.close();
-        std::cout << "Jugador1 - registro de fin de juego guardado" << std::endl;
-    } else {
-        std::cout << "Jugador1 - registro de fin de juego NO guardado al no poder abrir el archivo" << std::endl;
-    }
-
-    // Indicar que la escritura ha finalizado
-    isWriting = false;  
-
-    // Notificar a todas las hebras que la escritura ha terminado
-    cv.notify_all();
-
-    // Forzar finalizaci'on del hilo
-    std::terminate();
+    return false;
 }
 
 std::string fechaActual() {
@@ -321,7 +286,7 @@ int cambioRow(int direction,int lastHitRow) {
     std::string tipoImpacto = "";
     while (estadoJuego!= false ){
         // Generar timepo de disparo aleatorio
-        std::uniform_int_distribution<> waitDist(0,10);
+        std::uniform_int_distribution<> waitDist(0,2);
         int waitTime = waitDist(gen);
         std::cout << "Jugador1 - tiempo para sigueinte disparo: " <<waitTime<< std::endl;
         sleep(waitTime);
@@ -395,17 +360,18 @@ int cambioRow(int direction,int lastHitRow) {
         }
 
         // Realizar disparo    
-        std::cout << nextRow<<""<<nextCol<<std::endl; 
+        //std::cout << nextRow<<""<<nextCol<<std::endl; 
         //imprimirTablero2();              
         int target = tableroJugadorA2[nextRow][nextCol];
-        std::cout << "contenido-  "<<target << std::endl; 
+        //std::cout << "contenido-  "<<target << std::endl; 
             
         //std::cout << "Jugador1 - disparando a [" << nextRow << ", " << nextCol << "]" << std::endl;
         // Procesar el resultado del disparo
         if (target == 1) {
+            
             // Disparo al barco --> disparo
-            if (tableroJugadorA1[nextRow][nextCol+1]!=1 && tableroJugadorA1[nextRow][nextCol-1]!=1 
-                    && tableroJugadorA1[nextRow+1][nextCol]!=1 && tableroJugadorA1[nextRow-1][nextCol]!=1){
+            if (tableroJugadorA2[nextRow][nextCol+1]!=1 && tableroJugadorA2[nextRow][nextCol-1]!=1 
+                    && tableroJugadorA2[nextRow+1][nextCol]!=1 && tableroJugadorA2[nextRow-1][nextCol]!=1){
 
                     /* Para barcos en diagonal
                     && tableroJugadorA1[nextRow+1][nextCol+1]!=1 && tableroJugadorA1[nextRow+1][nextCol-1]!=1
@@ -532,7 +498,7 @@ int cambioRow(int direction,int lastHitRow) {
     std::string tipoImpacto = "";
     while (estadoJuego!= false ){
         // Generar timepo de disparo aleatorio
-        std::uniform_int_distribution<> waitDist(0,10);
+        std::uniform_int_distribution<> waitDist(0,2);
         int waitTime = waitDist(gen);
         std::cout << "Jugador2 - tiempo para sigueinte disparo: " <<waitTime<< std::endl;
         sleep(waitTime);
@@ -697,7 +663,7 @@ int cambioRow(int direction,int lastHitRow) {
 
             // Realizar la escritura en el archivo de fin de juego 
             std::ostringstream oss2;
-            oss2 << thread_id << " : GAME OVER";
+            oss2 << thread_id << " : WIN";
             std::string texto2 = oss2.str();
 
             std::ofstream archivo("intercambio_disparos.txt", std::ios::app); // Abrir en modo de anexado (append)
