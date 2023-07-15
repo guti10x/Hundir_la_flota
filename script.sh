@@ -1,17 +1,17 @@
 #!/bin/bash
 
 tablero1() {
-    #while true; do
-    #echo "Ingrese el número de filas (mínimo 5):"
-    #read filas
+    while true; do
+    echo "Ingrese el número de filas (mínimo 5):"
+    read filas
 
-    #echo "Ingrese el número de columnas (mínimo 5):"
-    #read columnas
+    echo "Ingrese el número de columnas (mínimo 5):"
+    read columnas
 
-    #if (( filas >= 5 && columnas >= 5 )); then
-    #   break
-    #fi
-    #done
+    if (( filas >= 5 && columnas >= 5 )); then
+       break
+    fi
+    done
 
     # Crear una matriz vacía
     matriz=()
@@ -114,6 +114,58 @@ lanzar_programa() {
             ./ejecutable 
         
         fi
+    #verificar que existen todos los archivos finales correctamente
+
+        # Obtener el directorio base del script actual
+        directorio=$(dirname "$0")
+
+
+        # Archivo a buscar
+        archivo="intercambio_disparos.txt"
+        archivo2=$(find "$directorio" -type f -name "batalla*.txt")
+
+        # Verificar si el archivo existe
+        if [ -f "$directorio/$archivo" ]; then
+            echo "El archivo $archivo se ha creado correctamente."
+        else
+            echo "El archivo $archivo se ha creado correctamente."
+        fi
+        
+        if [ -n "$archivo2" ]; then
+            echo "El archivo $archivo2 se ha creado correctamente."
+        else
+            echo "El archivo $archivo2 se ha creado correctamente."
+        fi
+        
+    }
+
+monitorizar_programa() {
+    # Ruta del archivo a monitorear
+    archivo="$(dirname "$0")/intercambio_disparos.txt"
+
+    # Variable para almacenar el número de líneas del archivo
+    num_lineas_anterior=$(wc -l < "$archivo")
+
+    cat "$archivo"
+
+    # Bucle infinito para monitorear el archivo
+    while true; do
+        # Obtener el número actual de líneas del archivo
+        num_lineas_actual=$(wc -l < "$archivo")
+
+        # Verificar si se ha añadido una nueva línea al archivo
+        if [ "$num_lineas_actual" -gt "$num_lineas_anterior" ]; then
+            # Mostrar la nueva línea por consola
+            nueva_linea=$(tail -n 1 "$archivo")
+            echo $nueva_linea
+        fi
+
+        # Actualizar el número de líneas anterior
+        num_lineas_anterior="$num_lineas_actual"
+
+        # Esperar 0.5 segundos antes de volver a verificar
+        sleep 0.5
+    done
 }
 
 # Menú de opciones
@@ -127,7 +179,7 @@ while true; do
     echo "2. Configirar tablero jugador 2"
     echo "3. Compilar"
     echo "4. Jugar"
-
+    echo "5. Monitorizar la partida (con el archivo de disparos)"
 
     echo "0. Salir"
     echo "---------------"
@@ -146,7 +198,9 @@ while true; do
         4)
             lanzar_programa  
             ;;
-
+        5)
+            monitorizar_programa
+            ;;
         0)
             echo "Saliendo..."
             break
