@@ -156,21 +156,57 @@ bool todosBarcosHundidos2() {
 }
 
 
-bool buscarPalabraEnArchivo(const std::string& nombreArchivo) {
+bool comprobarWin() {
     std::ifstream archivo(rutaLogIntercambioDisparos);
     if (!archivo) {
         std::cerr << "Error al abrir el archivo." << std::endl;
         return false;
     }
 
-    std::string palabra;
-    while (archivo >> palabra) {
-        if (palabra == "WIN") {
+    std::string linea;
+    while (std::getline(archivo, linea)) {
+        if (linea.find("WIN") != std::string::npos) {
+            archivo.close();
             return true;
         }
     }
 
+    archivo.close();
     return false;
+}
+
+void escribirGameOver(){
+	// Obtener el PID del hilo
+    std::thread::id thread_id = std::this_thread::get_id();
+
+    // Adquirir el cerrojo del mutex
+    std::unique_lock<std::mutex> lock(smf);  
+
+    // Esperar hasta que no haya escritura en curso
+    cv.wait(lock, [] { return !isWriting; });
+
+    isWriting = true;  // Indicar que se está realizando una escritura
+
+    // Realizar la escritura en el archivo
+        std::ostringstream oss;
+        oss << thread_id << " :GAME OVER";
+        std::string texto = oss.str();
+
+        std::ofstream archivo2("intercambio_disparos.txt", std::ios::app); // Abrir en modo de anexado (append)
+
+        if (archivo2.is_open()) {
+            archivo2 << texto << "\n"; // Agregar nueva línea al final
+            archivo2.close();
+                std::cout << "Jugador1 - registro de fin de juego guardado" << std::endl;
+        } else {
+            std::cout << "Jugador1 - registro de fin de juego NO guardado al no poder abrir el archivo" << std::endl;
+        }
+
+        // Indicar que la escritura ha finalizado
+        isWriting = false;  
+
+        // Notificar a todas las hebras que la escritura ha terminado
+        cv.notify_all();
 }
 
 std::string fechaActual() {
@@ -284,169 +320,153 @@ int cambioRow(int direction,int lastHitRow) {
         
     bool estadoJuego = true;
     std::string tipoImpacto = "";
+
     while (estadoJuego!= false ){
-        // Generar timepo de disparo aleatorio
-        std::uniform_int_distribution<> waitDist(0,2);
-        int waitTime = waitDist(gen);
-        std::cout << "Jugador1 - tiempo para sigueinte disparo: " <<waitTime<< std::endl;
-        sleep(waitTime);
-        
-        // Coordenadas del siguiente disparo
-        int nextRow, nextCol;
 
-        if (direction == 0) {
-            // Disparo aleatorio
-            nextRow = rowDist(gen);
-            nextCol = colDist(gen);
-            std::cout << "Jugador1 - disparo aleatorio con dirección [" <<nextRow<<","<<nextCol<<"]"<<std::endl;
+        if (comprobarWin()== true) {
+            std::cout << " raboooooooo jugador 1 pierde xq ha visto win j2'." << std::endl;
+            escribirGameOver();
+            estadoJuego= false;
+
+        }else{
+            // Generar timepo de disparo aleatorio
+            std::uniform_int_distribution<> waitDist(0,2);
+            int waitTime = waitDist(gen);
+            std::cout << "Jugador1 - tiempo para sigueinte disparo: " <<waitTime<< std::endl;
+            sleep(waitTime);
             
-        } else if (direction == 1) {
-            // Disparo hacia la derecha
-            nextRow = lastHitRow;
-            nextCol = lastHitCol + 1;
-            int contador= 4;
-            while (rows < nextRow &&  cols < nextCol){ 
-                cambioCol(direction,nextRow);
-                cambioCol(direction,nextCol);
+            // Coordenadas del siguiente disparo
+            int nextRow, nextCol;
+
+            if (direction == 0) {
+                // Disparo aleatorio
+                nextRow = rowDist(gen);
+                nextCol = colDist(gen);
+                std::cout << "Jugador1 - disparo aleatorio con dirección [" <<nextRow<<","<<nextCol<<"]"<<std::endl;
+                
+            } else if (direction == 1) {
+                // Disparo hacia la derecha
+                nextRow = lastHitRow;
+                nextCol = lastHitCol + 1;
+                int contador= 4;
+                while (rows < nextRow &&  cols < nextCol){ 
+                    cambioCol(direction,nextRow);
+                    cambioCol(direction,nextCol);
+                        if (contador>4){
+                            std::cout << "Jugador1 - error fatal" << std::endl;
+                            break;
+                        }
+                }  
+                std::cout << "Jugador1 - disparo con dirección [" <<nextRow<<","<<nextCol<<"]"<<std::endl;
+        
+            } else if (direction == 2) {
+                // Disparo hacia abajo
+                nextRow = lastHitRow + 1;
+                nextCol = lastHitCol;
+                int contador= 4;
+                while (rows < nextRow &&  cols < nextCol){   
+                    cambioCol(direction,nextRow);
+                    cambioCol(direction,nextCol);
                     if (contador>4){
                         std::cout << "Jugador1 - error fatal" << std::endl;
                         break;
                     }
-            }  
-            std::cout << "Jugador1 - disparo con dirección [" <<nextRow<<","<<nextCol<<"]"<<std::endl;
-    
-        } else if (direction == 2) {
-            // Disparo hacia abajo
-            nextRow = lastHitRow + 1;
-            nextCol = lastHitCol;
-            int contador= 4;
-            while (rows < nextRow &&  cols < nextCol){   
-                cambioCol(direction,nextRow);
-                cambioCol(direction,nextCol);
-                if (contador>4){
-                    std::cout << "Jugador1 - error fatal" << std::endl;
-                    break;
-                }
-            } 
-            std::cout << "Jugador1 - disparo con dirección [" <<nextRow<<","<<nextCol<<"]"<<std::endl;
-        } else if (direction == 3) {
-            // Disparo hacia la izquierda
-            nextRow = lastHitRow;
-            nextCol = lastHitCol - 1;
-            int contador= 4;
-            while (rows < nextRow &&  cols < nextCol){   
-                 cambioCol(direction,nextRow);
-                cambioCol(direction,nextCol);
-                if (contador>4){
-                    std::cout << "Jugador1 - error fatal" << std::endl;
-                    break;
-                }
-            }
-            std::cout << "Jugador1 - disparo con dirección [" <<nextRow<<","<<nextCol<<"]"<<std::endl;
-        } else if (direction == 4) {
-            // Disparo hacia arriba
-            nextRow = lastHitRow - 1;
-            nextCol = lastHitCol;
-            int contador= 4;
-            while (rows < nextRow &&  cols < nextCol){ 
-                nextRow=cambioCol(direction,nextRow);
-                nextCol=cambioCol(direction,nextCol);
+                } 
+                std::cout << "Jugador1 - disparo con dirección [" <<nextRow<<","<<nextCol<<"]"<<std::endl;
+            } else if (direction == 3) {
+                // Disparo hacia la izquierda
+                nextRow = lastHitRow;
+                nextCol = lastHitCol - 1;
+                int contador= 4;
+                while (rows < nextRow &&  cols < nextCol){   
+                    cambioCol(direction,nextRow);
+                    cambioCol(direction,nextCol);
                     if (contador>4){
                         std::cout << "Jugador1 - error fatal" << std::endl;
                         break;
                     }
-            } 
-            std::cout << "Jugador1 - disparo con dirección [" <<nextRow<<","<<nextCol<<"]"<<std::endl;
-        }
-
-        // Realizar disparo    
-        //std::cout << nextRow<<""<<nextCol<<std::endl; 
-        //imprimirTablero2();              
-        int target = tableroJugadorA2[nextRow][nextCol];
-        //std::cout << "contenido-  "<<target << std::endl; 
-            
-        //std::cout << "Jugador1 - disparando a [" << nextRow << ", " << nextCol << "]" << std::endl;
-        // Procesar el resultado del disparo
-        if (target == 1) {
-            
-            // Disparo al barco --> disparo
-            if (tableroJugadorA2[nextRow][nextCol+1]!=1 && tableroJugadorA2[nextRow][nextCol-1]!=1 
-                    && tableroJugadorA2[nextRow+1][nextCol]!=1 && tableroJugadorA2[nextRow-1][nextCol]!=1){
-
-                    /* Para barcos en diagonal
-                    && tableroJugadorA1[nextRow+1][nextCol+1]!=1 && tableroJugadorA1[nextRow+1][nextCol-1]!=1
-                    && tableroJugadorA1[nextRow-1][nextCol+1]!=1 && tableroJugadorA1[nextRow-1][nextCol-1]!=1)
-                    */
-                    tipoImpacto= "HUNDIDO";
-                    std::cout << "Jugador1 - ¡¡¡¡¡ BARCO ENEMIGO HUNDIDO!!!!! [" << nextRow << ", " << nextCol << "]" << std::endl;
-                    // Actualizar la dirección del siguiente disparo
-                    direction = 0;  // Si un barco contrincante resulta hundido, los siguientes disparos volverán a ser de coordenadas aleatorias.
-            }else{
-                tipoImpacto= "TOCADO";
-                std::cout << "Jugador1 - ¡¡¡¡¡IMPACTO A BARCO ENEMIGO!!!!! [" << nextRow << ", " << nextCol << "]" << std::endl;
-                direction = 1;  // Si un disparo acierta en un contrincante, el siguiente disparo deberá realizarse hacia la derecha
+                }
+                std::cout << "Jugador1 - disparo con dirección [" <<nextRow<<","<<nextCol<<"]"<<std::endl;
+            } else if (direction == 4) {
+                // Disparo hacia arriba
+                nextRow = lastHitRow - 1;
+                nextCol = lastHitCol;
+                int contador= 4;
+                while (rows < nextRow &&  cols < nextCol){ 
+                    nextRow=cambioCol(direction,nextRow);
+                    nextCol=cambioCol(direction,nextCol);
+                        if (contador>4){
+                            std::cout << "Jugador1 - error fatal" << std::endl;
+                            break;
+                        }
+                } 
+                std::cout << "Jugador1 - disparo con dirección [" <<nextRow<<","<<nextCol<<"]"<<std::endl;
             }
 
-            tableroJugadorA2[nextRow][nextCol] = 3;  // Marcar como barco hundido
+            // Realizar disparo    
+            //std::cout << nextRow<<""<<nextCol<<std::endl; 
+            //imprimirTablero2();              
+            int target = tableroJugadorA2[nextRow][nextCol];
+            //std::cout << "contenido-  "<<target << std::endl; 
+                
+            //std::cout << "Jugador1 - disparando a [" << nextRow << ", " << nextCol << "]" << std::endl;
+            // Procesar el resultado del disparo
+            if (target == 1) {
+                
+                // Disparo al barco --> disparo
+                if (tableroJugadorA2[nextRow][nextCol+1]!=1 && tableroJugadorA2[nextRow][nextCol-1]!=1 
+                        && tableroJugadorA2[nextRow+1][nextCol]!=1 && tableroJugadorA2[nextRow-1][nextCol]!=1){
 
-        } else if(target == 0) {
-            // Disparo al agua --> disparo aleatorio
-            direction = 0;
-            tipoImpacto= "AGUA";
-            std::cout << "Jugador1 - disparo al agua!" << std::endl;
-            std::cout << std::endl;
-        } else if(target == 3) {
-            // Disparo al agua --> disparo aleatorio
-            direction = 0;
-            tipoImpacto= "AGUA";
-            std::cout << "Jugador1 - disparo al agua!" << std::endl;
-            std::cout << std::endl;
-        }   
-        
-        imprimirTablero2();
+                        /* Para barcos en diagonal
+                        && tableroJugadorA1[nextRow+1][nextCol+1]!=1 && tableroJugadorA1[nextRow+1][nextCol-1]!=1
+                        && tableroJugadorA1[nextRow-1][nextCol+1]!=1 && tableroJugadorA1[nextRow-1][nextCol-1]!=1)
+                        */
+                        tipoImpacto= "HUNDIDO";
+                        std::cout << "Jugador1 - ¡¡¡¡¡ BARCO ENEMIGO HUNDIDO!!!!! [" << nextRow << ", " << nextCol << "]" << std::endl;
+                        // Actualizar la dirección del siguiente disparo
+                        direction = 0;  // Si un barco contrincante resulta hundido, los siguientes disparos volverán a ser de coordenadas aleatorias.
+                }else{
+                    tipoImpacto= "TOCADO";
+                    std::cout << "Jugador1 - ¡¡¡¡¡IMPACTO A BARCO ENEMIGO!!!!! [" << nextRow << ", " << nextCol << "]" << std::endl;
+                    direction = 1;  // Si un disparo acierta en un contrincante, el siguiente disparo deberá realizarse hacia la derecha
+                }
 
-        //reajustamos variables ultimo disparo para hacer el siguiente disparo
-        lastHitRow = nextRow;
-        lastHitCol = nextCol;
+                tableroJugadorA2[nextRow][nextCol] = 3;  // Marcar como barco hundido
 
-        // Obtener el PID del hilo
-        std::thread::id thread_id = std::this_thread::get_id();
-
-        // Adquirir el cerrojo del mutex
-        std::unique_lock<std::mutex> lock(smf);  
-
-        // Esperar hasta que no haya escritura en curso
-        cv.wait(lock, [] { return !isWriting; });
-
-        isWriting = true;  // Indicar que se está realizando una escritura
-
-        // Realizar la escritura en el archivo
-        std::ostringstream oss;
-        oss << thread_id << ":" << nextRow << "," << nextCol<< ":"<<tipoImpacto;
-        std::string texto = oss.str();
-
-        std::ofstream archivo("intercambio_disparos.txt", std::ios::app); // Abrir en modo de anexado (append)
-
-        if (archivo.is_open()) {
-            archivo << texto << "\n"; // Agregar nueva línea al final
-            archivo.close();
-            std::cout << "Jugador1 - registro de disparo guardado" << std::endl;
-            std::cout << "------------------------------------------------------------"<< std::endl;
-            std::cout << std::endl;
-        } else {
-            std::cout << "Jugador1 - registro de disparo NO guardado al no poder abrir el archivo" << std::endl;
-            std::cout << "------------------------------------------------------------"<< std::endl;
-            std::cout << std::endl;
-        }
-
-        // Verificar si se hundieron todos los barcos del oponente
-        if (todosBarcosHundidos1()) {
-            std::cout << "!!!!!Jugador 1 ha hundido todos los barcos del enemigo!!!!!" << std::endl;
-            estadoJuego = false;
+            } else if(target == 0) {
+                // Disparo al agua --> disparo aleatorio
+                direction = 0;
+                tipoImpacto= "AGUA";
+                std::cout << "Jugador1 - disparo al agua!" << std::endl;
+                std::cout << std::endl;
+            } else if(target == 3) {
+                // Disparo al agua --> disparo aleatorio
+                direction = 0;
+                tipoImpacto= "AGUA";
+                std::cout << "Jugador1 - disparo al agua!" << std::endl;
+                std::cout << std::endl;
+            }   
             
+            imprimirTablero2();
+
+            //reajustamos variables ultimo disparo para hacer el siguiente disparo
+            lastHitRow = nextRow;
+            lastHitCol = nextCol;
+
+            // Obtener el PID del hilo
+            std::thread::id thread_id = std::this_thread::get_id();
+
+            // Adquirir el cerrojo del mutex
+            std::unique_lock<std::mutex> lock(smf);  
+
+            // Esperar hasta que no haya escritura en curso
+            cv.wait(lock, [] { return !isWriting; });
+
+            isWriting = true;  // Indicar que se está realizando una escritura
+
             // Realizar la escritura en el archivo
             std::ostringstream oss;
-            oss << thread_id << " :WIN";
+            oss << thread_id << ":" << nextRow << "," << nextCol<< ":"<<tipoImpacto;
             std::string texto = oss.str();
 
             std::ofstream archivo("intercambio_disparos.txt", std::ios::app); // Abrir en modo de anexado (append)
@@ -454,28 +474,54 @@ int cambioRow(int direction,int lastHitRow) {
             if (archivo.is_open()) {
                 archivo << texto << "\n"; // Agregar nueva línea al final
                 archivo.close();
-                std::cout << "Jugador1 - registro de fin de juego guardado" << std::endl;
+                std::cout << "Jugador1 - registro de disparo guardado" << std::endl;
+                std::cout << "------------------------------------------------------------"<< std::endl;
+                std::cout << std::endl;
             } else {
-                std::cout << "Jugador1 - registro de fin de juego NO guardado al no poder abrir el archivo" << std::endl;
-                // Forzar finalizaci'on del hilo
-                //std::terminate();
+                std::cout << "Jugador1 - registro de disparo NO guardado al no poder abrir el archivo" << std::endl;
+                std::cout << "------------------------------------------------------------"<< std::endl;
+                std::cout << std::endl;
             }
-        }
 
-        // Indicar que la escritura ha finalizado
-        isWriting = false;  
+            // Verificar si se hundieron todos los barcos del oponente
+            if (todosBarcosHundidos1()) {
+                std::cout << "!!!!!Jugador 1 ha hundido todos los barcos del enemigo!!!!!" << std::endl;
+                estadoJuego = false;
+                
+                // Realizar la escritura en el archivo
+                std::ostringstream oss;
+                oss << thread_id  << ":WIN";
+                std::string texto = oss.str();
 
-        // Notificar a todas las hebras que la escritura ha terminado
-        cv.notify_all(); 
+                std::ofstream archivo("intercambio_disparos.txt", std::ios::app); // Abrir en modo de anexado (append)
 
-        if (todosBarcosHundidos1()) {
-            // Espera 2 segundos antes del siguiente disparo
-            std::this_thread::sleep_for(std::chrono::seconds(2));
+                if (archivo.is_open()) {
+                    archivo << texto << "\n"; // Agregar nueva línea al final
+                    archivo.close();
+                    std::cout << "Jugador1 - registro de fin de juego guardado" << std::endl;
+                } else {
+                    std::cout << "Jugador1 - registro de fin de juego NO guardado al no poder abrir el archivo" << std::endl;
+                    // Forzar finalizaci'on del hilo
+                    //std::terminate();
+                }
+            }
+
+            // Indicar que la escritura ha finalizado
+            isWriting = false;  
+
+            // Notificar a todas las hebras que la escritura ha terminado
+            cv.notify_all(); 
+
+            if (todosBarcosHundidos1()) {
+                // Espera 2 segundos antes del siguiente disparo
+                std::this_thread::sleep_for(std::chrono::seconds(2));
+            }
         }
     }
 }
 
  void jugador2() {
+    
     std::this_thread::sleep_for(std::chrono::milliseconds(300)); // Esperar antes de empezar a ejecutarse para comprobaciones del main
 
     // Obtener el número de filas del vector
@@ -495,199 +541,208 @@ int cambioRow(int direction,int lastHitRow) {
     int lastHitCol = -1;     // Columna del último disparo certero
         
     bool estadoJuego = true;
-    std::string tipoImpacto = "";
+    std::string tipoImpacto = "";\
+ 
     while (estadoJuego!= false ){
-        // Generar timepo de disparo aleatorio
-        std::uniform_int_distribution<> waitDist(0,2);
-        int waitTime = waitDist(gen);
-        std::cout << "Jugador2 - tiempo para sigueinte disparo: " <<waitTime<< std::endl;
-        sleep(waitTime);
-        
-        // Coordenadas del siguiente disparo
-        int nextRow, nextCol;
 
-        if (direction == 0) {
-            // Disparo aleatorio
-            nextRow = rowDist(gen);
-            nextCol = colDist(gen);
-            std::cout << "Jugador2 - disparo aleatorio con dirección [" <<nextRow<<","<<nextCol<<"]"<<std::endl;
-                
-        } else if (direction == 1) {
-            // Disparo hacia la derecha
-            nextRow = lastHitRow;
-            nextCol = lastHitCol + 1;
-            int contador= 4;
-            while (rows < nextRow &&  cols < nextCol){ 
-                cambioCol(direction,nextRow);
-                cambioCol(direction,nextCol);
-                if (contador>4){
-                    std::cout << "Jugador2 - error fatal" << std::endl;
-                    break;
-                }
-            }  
-            std::cout << "Jugador2 - disparo con dirección [" <<nextRow<<","<<nextCol<<"]"<<std::endl;
-        } else if (direction == 2) {
-            // Disparo hacia abajo
-            nextRow = lastHitRow + 1;
-            nextCol = lastHitCol;
-            int contador= 4;
-            while (rows < nextRow &&  cols < nextCol){ 
-                cambioCol(direction,nextRow);
-                cambioCol(direction,nextCol);
-                if (contador>4){
-                    std::cout << "Jugador2 - error fatal" << std::endl;
-                    break;
-                }
-            } 
-            std::cout << "Jugador2 - disparo con dirección [" <<nextRow<<","<<nextCol<<"]"<<std::endl;
-        } else if (direction == 3) {
-            // Disparo hacia la izquierda
-            nextRow = lastHitRow;
-            nextCol = lastHitCol - 1;
-            int contador= 4;
-            while (rows < nextRow &&  cols < nextCol){  
-                cambioCol(direction,nextRow);
-                cambioCol(direction,nextCol);
-                if (contador>4){
-                    std::cout << "Jugador2 - error fatal" << std::endl;
-                    break;
-                }
-            }
-            std::cout << "Jugador2 - disparo con dirección [" <<nextRow<<","<<nextCol<<"]"<<std::endl;
-        } else if (direction == 4) {
-            // Disparo hacia arriba
-            nextRow = lastHitRow - 1;
-            nextCol = lastHitCol;
-            int contador= 4;
-            while (rows < nextRow &&  cols < nextCol){ 
-                nextRow=cambioCol(direction,nextRow);
-                nextCol=cambioCol(direction,nextCol);
-                if (contador>4){
-                    std::cout << "Jugador2 - error fatal" << std::endl;
-                    break;
-                }
-            } 
-            std::cout << "Jugador2 - disparo con dirección [" <<nextRow<<","<<nextCol<<"]"<<std::endl;
-        }
+        if (comprobarWin()== true)  {
+        std::cout << "rabooooooooooo jugador 2 pierde q ha visto win j2" << std::endl;
+              escribirGameOver();
+            estadoJuego= false;
 
-        // Realizar disparo                       
-        //std::cout << nextRow<<nextCol<<" "<<rows<<cols<<std::endl;  
-        //imprimirTablero1();                
-        int target = tableroJugadorA1[nextRow][nextCol];
-        //std::cout << "contenido-  "<<target << std::endl; 
+        }else{
+
+            // Generar timepo de disparo aleatorio
+            std::uniform_int_distribution<> waitDist(0,2);
+            int waitTime = waitDist(gen);
+            std::cout << "Jugador2 - tiempo para sigueinte disparo: " <<waitTime<< std::endl;
+            sleep(waitTime);
             
-        std::cout << "Jugador2 - disparando a [" << nextRow << ", " << nextCol << "]" << std::endl;
+            // Coordenadas del siguiente disparo
+            int nextRow, nextCol;
 
-        // Procesar el resultado del disparo
-        if (target == 1) {
-            // Disparo al barco --> disparo
-
-            //std::cout <<tableroJugadorA1[nextRow][nextCol+1]<< std::endl;
-              
-            if (tableroJugadorA1[nextRow][nextCol+1]!=1 && tableroJugadorA1[nextRow][nextCol-1]!=1 
-                && tableroJugadorA1[nextRow+1][nextCol]!=1 && tableroJugadorA1[nextRow-1][nextCol]!=1){
-
-                /* Para barcos en diagonal
-                && tableroJugadorA1[nextRow+1][nextCol+1]!=1 && tableroJugadorA1[nextRow+1][nextCol-1]!=1
-                && tableroJugadorA1[nextRow-1][nextCol+1]!=1 && tableroJugadorA1[nextRow-1][nextCol-1]!=1)
-                */
-               
-                tipoImpacto= "HUNDIDO";
-                std::cout << "Jugador2 - ¡¡¡¡¡ BARCO ENEMIGO HUNDIDO!!!!! [" << nextRow << ", " << nextCol << "]" << std::endl;
-                // Actualizar la dirección del siguiente disparo
-                direction = 0;  // Si un barco contrincante resulta hundido, los siguientes disparos volverán a ser de coordenadas aleatorias.
-
-            }else{
-                tipoImpacto= "TOCADO";
-                std::cout << "Jugador2 - ¡¡¡¡¡IMPACTO A BARCO ENEMIGO!!!!! [" << nextRow << ", " << nextCol << "]" << std::endl;
-                // Actualizar la dirección del siguiente disparo
-                direction = 1;  // Si un disparo acierta en un contrincante, el siguiente disparo deberá realizarse hacia la derecha
-            }
+            if (direction == 0) {
+                // Disparo aleatorio
+                nextRow = rowDist(gen);
+                nextCol = colDist(gen);
+                std::cout << "Jugador2 - disparo aleatorio con dirección [" <<nextRow<<","<<nextCol<<"]"<<std::endl;
                     
-            tableroJugadorA1[nextRow][nextCol] = 3;  // Marcar como barco hundido
+            } else if (direction == 1) {
+                // Disparo hacia la derecha
+                nextRow = lastHitRow;
+                nextCol = lastHitCol + 1;
+                int contador= 4;
+                while (rows < nextRow &&  cols < nextCol){ 
+                    cambioCol(direction,nextRow);
+                    cambioCol(direction,nextCol);
+                    if (contador>4){
+                        std::cout << "Jugador2 - error fatal" << std::endl;
+                        break;
+                    }
+                }  
+                std::cout << "Jugador2 - disparo con dirección [" <<nextRow<<","<<nextCol<<"]"<<std::endl;
+            } else if (direction == 2) {
+                // Disparo hacia abajo
+                nextRow = lastHitRow + 1;
+                nextCol = lastHitCol;
+                int contador= 4;
+                while (rows < nextRow &&  cols < nextCol){ 
+                    cambioCol(direction,nextRow);
+                    cambioCol(direction,nextCol);
+                    if (contador>4){
+                        std::cout << "Jugador2 - error fatal" << std::endl;
+                        break;
+                    }
+                } 
+                std::cout << "Jugador2 - disparo con dirección [" <<nextRow<<","<<nextCol<<"]"<<std::endl;
+            } else if (direction == 3) {
+                // Disparo hacia la izquierda
+                nextRow = lastHitRow;
+                nextCol = lastHitCol - 1;
+                int contador= 4;
+                while (rows < nextRow &&  cols < nextCol){  
+                    cambioCol(direction,nextRow);
+                    cambioCol(direction,nextCol);
+                    if (contador>4){
+                        std::cout << "Jugador2 - error fatal" << std::endl;
+                        break;
+                    }
+                }
+                std::cout << "Jugador2 - disparo con dirección [" <<nextRow<<","<<nextCol<<"]"<<std::endl;
+            } else if (direction == 4) {
+                // Disparo hacia arriba
+                nextRow = lastHitRow - 1;
+                nextCol = lastHitCol;
+                int contador= 4;
+                while (rows < nextRow &&  cols < nextCol){ 
+                    nextRow=cambioCol(direction,nextRow);
+                    nextCol=cambioCol(direction,nextCol);
+                    if (contador>4){
+                        std::cout << "Jugador2 - error fatal" << std::endl;
+                        break;
+                    }
+                } 
+                std::cout << "Jugador2 - disparo con dirección [" <<nextRow<<","<<nextCol<<"]"<<std::endl;
+            }
+
+            // Realizar disparo                       
+            //std::cout << nextRow<<nextCol<<" "<<rows<<cols<<std::endl;  
+            //imprimirTablero1();                
+            int target = tableroJugadorA1[nextRow][nextCol];
+            //std::cout << "contenido-  "<<target << std::endl; 
                 
-        }else if(target == 0) {
-            // Disparo al agua --> disparo aleatorio
-            direction = 0; //Si un disparo da en agua, el siguiente disparo volverá a ser aleatorio
-            tipoImpacto= "AGUA"; 
-            std::cout << "Jugador2 - disparo al agua!" << std::endl;
-            std::cout << std::endl;
-        } else if(target == 3) {
-            // Disparo al agua --> disparo aleatorio
-            direction = 0;
-            tipoImpacto= "AGUA"; 
-            std::cout << "Jugador2 - disparo al agua!" << std::endl;
-            std::cout << std::endl;
-        }   
-               
-        imprimirTablero1();
+            std::cout << "Jugador2 - disparando a [" << nextRow << ", " << nextCol << "]" << std::endl;
 
-        //reajustamos variables ultimo disparo para hacer el siguiente disparo
-        lastHitRow = nextRow;
-        lastHitCol = nextCol;
+            // Procesar el resultado del disparo
+            if (target == 1) {
+                // Disparo al barco --> disparo
 
-        // Obtener el PID del hilo
-        std::thread::id thread_id = std::this_thread::get_id();
+                //std::cout <<tableroJugadorA1[nextRow][nextCol+1]<< std::endl;
+                
+                if (tableroJugadorA1[nextRow][nextCol+1]!=1 && tableroJugadorA1[nextRow][nextCol-1]!=1 
+                    && tableroJugadorA1[nextRow+1][nextCol]!=1 && tableroJugadorA1[nextRow-1][nextCol]!=1){
 
-        // Adquirir el cerrojo del mutex
-        std::unique_lock<std::mutex> lock(smf);  
+                    /* Para barcos en diagonal
+                    && tableroJugadorA1[nextRow+1][nextCol+1]!=1 && tableroJugadorA1[nextRow+1][nextCol-1]!=1
+                    && tableroJugadorA1[nextRow-1][nextCol+1]!=1 && tableroJugadorA1[nextRow-1][nextCol-1]!=1)
+                    */
+                
+                    tipoImpacto= "HUNDIDO";
+                    std::cout << "Jugador2 - ¡¡¡¡¡ BARCO ENEMIGO HUNDIDO!!!!! [" << nextRow << ", " << nextCol << "]" << std::endl;
+                    // Actualizar la dirección del siguiente disparo
+                    direction = 0;  // Si un barco contrincante resulta hundido, los siguientes disparos volverán a ser de coordenadas aleatorias.
 
-        // Esperar hasta que no haya escritura en curso
-        cv.wait(lock, [] { return !isWriting; });
+                }else{
+                    tipoImpacto= "TOCADO";
+                    std::cout << "Jugador2 - ¡¡¡¡¡IMPACTO A BARCO ENEMIGO!!!!! [" << nextRow << ", " << nextCol << "]" << std::endl;
+                    // Actualizar la dirección del siguiente disparo
+                    direction = 1;  // Si un disparo acierta en un contrincante, el siguiente disparo deberá realizarse hacia la derecha
+                }
+                        
+                tableroJugadorA1[nextRow][nextCol] = 3;  // Marcar como barco hundido
+                    
+            }else if(target == 0) {
+                // Disparo al agua --> disparo aleatorio
+                direction = 0; //Si un disparo da en agua, el siguiente disparo volverá a ser aleatorio
+                tipoImpacto= "AGUA"; 
+                std::cout << "Jugador2 - disparo al agua!" << std::endl;
+                std::cout << std::endl;
+            } else if(target == 3) {
+                // Disparo al agua --> disparo aleatorio
+                direction = 0;
+                tipoImpacto= "AGUA"; 
+                std::cout << "Jugador2 - disparo al agua!" << std::endl;
+                std::cout << std::endl;
+            }   
+                
+            imprimirTablero1();
 
-        isWriting = true;  // Indicar que se está realizando una escritura
-            
-        // Realizar la escritura en el archivo
-        std::ostringstream oss;
-        oss << thread_id << ":" << nextRow << "," << nextCol << ":"<<tipoImpacto;
-        std::string texto = oss.str();
+            //reajustamos variables ultimo disparo para hacer el siguiente disparo
+            lastHitRow = nextRow;
+            lastHitCol = nextCol;
 
-        std::ofstream archivo("intercambio_disparos.txt", std::ios::app); // Abrir en modo de anexado (append)
+            // Obtener el PID del hilo
+            std::thread::id thread_id = std::this_thread::get_id();
 
-        if (archivo.is_open()) {
-            archivo << texto << "\n"; // Agregar nueva línea al final
-            archivo.close();
-            std::cout << "Jugador2 - registro de disparo guardado" << std::endl;
-            std::cout << "------------------------------------------------------------"<< std::endl;
-            std::cout << std::endl;
-        } else {
-            std::cout << "Jugador2 - registro de disparo NO guardado al no poder abrir el archivo" << std::endl;
-            std::cout << "------------------------------------------------------------"<< std::endl;
-            std::cout << std::endl;
-        }
+            // Adquirir el cerrojo del mutex
+            std::unique_lock<std::mutex> lock(smf);  
 
-        // Verificar si se hundieron todos los barcos del oponente
-        if (todosBarcosHundidos2()== true) {
-            std::cout << "!!!!!Jugador 2 ha hundido todos los barcos del enemigo!!!!!" << std::endl;
-            estadoJuego = false;
+            // Esperar hasta que no haya escritura en curso
+            cv.wait(lock, [] { return !isWriting; });
 
-            // Realizar la escritura en el archivo de fin de juego 
-            std::ostringstream oss2;
-            oss2 << thread_id << " : WIN";
-            std::string texto2 = oss2.str();
+            isWriting = true;  // Indicar que se está realizando una escritura
+                
+            // Realizar la escritura en el archivo
+            std::ostringstream oss;
+            oss << thread_id << ":" << nextRow << "," << nextCol << ":"<<tipoImpacto;
+            std::string texto = oss.str();
 
             std::ofstream archivo("intercambio_disparos.txt", std::ios::app); // Abrir en modo de anexado (append)
 
             if (archivo.is_open()) {
-                archivo << texto2 << "\n"; // Agregar nueva línea al final
+                archivo << texto << "\n"; // Agregar nueva línea al final
                 archivo.close();
-                std::cout << "Jugador2 - registro de fin de juego guardado" << std::endl;
-                // Forzar finalizaci'on del hilo
-                //std::terminate();
-            }   
-        } 
+                std::cout << "Jugador2 - registro de disparo guardado" << std::endl;
+                std::cout << "------------------------------------------------------------"<< std::endl;
+                std::cout << std::endl;
+            } else {
+                std::cout << "Jugador2 - registro de disparo NO guardado al no poder abrir el archivo" << std::endl;
+                std::cout << "------------------------------------------------------------"<< std::endl;
+                std::cout << std::endl;
+            }
 
-        // Indicar que la escritura ha finalizado
-        isWriting = false;  
+            // Verificar si se hundieron todos los barcos del oponente
+            if (todosBarcosHundidos2()== true) {
+                std::cout << "!!!!!Jugador 2 ha hundido todos los barcos del enemigo!!!!!" << std::endl;
+                estadoJuego = false;
 
-        // Notificar a todas las hebras que la escritura ha terminado
-         cv.notify_all(); 
-        
-        if (todosBarcosHundidos2()== false) {
-            // Espera 2 segundos antes del siguiente disparo
-            std::this_thread::sleep_for(std::chrono::seconds(2));
+                // Realizar la escritura en el archivo de fin de juego 
+                std::ostringstream oss2;
+                oss2 << thread_id << ":WIN";
+                std::string texto2 = oss2.str();
+
+                std::ofstream archivo("intercambio_disparos.txt", std::ios::app); // Abrir en modo de anexado (append)
+
+                if (archivo.is_open()) {
+                    archivo << texto2 << "\n"; // Agregar nueva línea al final
+                    archivo.close();
+                    std::cout << "Jugador2 - registro de fin de juego guardado" << std::endl;
+                    // Forzar finalizaci'on del hilo
+                    //std::terminate();
+                }   
+            } 
+
+            // Indicar que la escritura ha finalizado
+            isWriting = false;  
+
+            // Notificar a todas las hebras que la escritura ha terminado
+            cv.notify_all(); 
+            
+            if (todosBarcosHundidos2()== false) {
+                // Espera 2 segundos antes del siguiente disparo
+                std::this_thread::sleep_for(std::chrono::seconds(2));
+            }
         }
-
     }
  }
 
