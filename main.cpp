@@ -330,7 +330,7 @@ int cambioRow(int direction,int lastHitRow) {
 
         }else{
             // Generar timepo de disparo aleatorio
-            std::uniform_int_distribution<> waitDist(0,2);
+            std::uniform_int_distribution<> waitDist(0,10);
             int waitTime = waitDist(gen);
             std::cout << "Jugador1 - tiempo para sigueinte disparo: " <<waitTime<< std::endl;
             sleep(waitTime);
@@ -553,7 +553,7 @@ int cambioRow(int direction,int lastHitRow) {
         }else{
 
             // Generar timepo de disparo aleatorio
-            std::uniform_int_distribution<> waitDist(0,2);
+            std::uniform_int_distribution<> waitDist(0,10);
             int waitTime = waitDist(gen);
             std::cout << "Jugador2 - tiempo para sigueinte disparo: " <<waitTime<< std::endl;
             sleep(waitTime);
