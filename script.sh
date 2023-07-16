@@ -339,6 +339,23 @@ tablero() {
     echo "Matriz guardada en $archivo_salida"
 }
 
+# Función para comprobar archivos necesarios para ejecución y compilar
+    compilar() {
+        if [ -f "tablero_jugador1.txt" ] && [ -f "tablero_jugador2.txt" ]&& [ -f "main.cpp" ]; then
+            echo "Todos los archivos necesarios existen y estan disponibles para la ejecución del codigo."
+
+            #compilar
+            local archivo_cpp="main.cpp"
+            echo "Compilando el archivo $archivo_cpp..."
+            g++ -o ejecutable $archivo_cpp
+            echo "Compilación completada. Se generó el archivo ejecutable 'ejecutable'."
+        
+        else
+            echo "Faltan archivos para la correcta ejecución del juego."
+        fi
+
+    }
+
 lanzar_programa() {
     #compilar
         local archivo_cpp="main.cpp"
