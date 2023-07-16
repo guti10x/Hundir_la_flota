@@ -140,6 +140,7 @@ lanzar_programa() {
     }
 
 monitorizar_programa() {
+    echo "Al ejecutar el juego se ira mostrando los disparos realizados escritos en el archiv de intercambio de disparos"
     # Ruta del archivo a monitorear
     archivo="$(dirname "$0")/intercambio_disparos.txt"
 
@@ -167,6 +168,9 @@ monitorizar_programa() {
         sleep 0.5
     done
 }
+
+# Exportar la función para que sea accesible desde el nuevo terminal
+export -f monitorizar_programa
 
 # Menú de opciones
 while true; do
@@ -199,7 +203,7 @@ while true; do
             lanzar_programa  
             ;;
         5)
-            monitorizar_programa
+            gnome-terminal -- bash -c "monitorizar_programa; exec bash"
             ;;
         0)
             echo "Saliendo..."
