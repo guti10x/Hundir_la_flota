@@ -423,11 +423,13 @@ int cambioRow(int direction,int lastHitRow) {
                         */
                         tipoImpacto= "HUNDIDO";
                         std::cout << "Jugador1 - ¡¡¡¡¡ BARCO ENEMIGO HUNDIDO!!!!! [" << nextRow << ", " << nextCol << "]" << std::endl;
+                        std::cout << std::endl;
                         // Actualizar la dirección del siguiente disparo
                         direction = 0;  // Si un barco contrincante resulta hundido, los siguientes disparos volverán a ser de coordenadas aleatorias.
                 }else{
                     tipoImpacto= "TOCADO";
                     std::cout << "Jugador1 - ¡¡¡¡¡IMPACTO A BARCO ENEMIGO!!!!! [" << nextRow << ", " << nextCol << "]" << std::endl;
+                    std::cout << std::endl;
                     direction = 1;  // Si un disparo acierta en un contrincante, el siguiente disparo deberá realizarse hacia la derecha
                 }
 
@@ -475,11 +477,9 @@ int cambioRow(int direction,int lastHitRow) {
                 archivo << texto << "\n"; // Agregar nueva línea al final
                 archivo.close();
                 std::cout << "Jugador1 - registro de disparo guardado" << std::endl;
-                std::cout << "------------------------------------------------------------"<< std::endl;
                 std::cout << std::endl;
             } else {
                 std::cout << "Jugador1 - registro de disparo NO guardado al no poder abrir el archivo" << std::endl;
-                std::cout << "------------------------------------------------------------"<< std::endl;
                 std::cout << std::endl;
             }
 
@@ -649,12 +649,14 @@ int cambioRow(int direction,int lastHitRow) {
                 
                     tipoImpacto= "HUNDIDO";
                     std::cout << "Jugador2 - ¡¡¡¡¡ BARCO ENEMIGO HUNDIDO!!!!! [" << nextRow << ", " << nextCol << "]" << std::endl;
+                    std::cout << std::endl;
                     // Actualizar la dirección del siguiente disparo
                     direction = 0;  // Si un barco contrincante resulta hundido, los siguientes disparos volverán a ser de coordenadas aleatorias.
 
                 }else{
                     tipoImpacto= "TOCADO";
                     std::cout << "Jugador2 - ¡¡¡¡¡IMPACTO A BARCO ENEMIGO!!!!! [" << nextRow << ", " << nextCol << "]" << std::endl;
+                    
                     // Actualizar la dirección del siguiente disparo
                     direction = 1;  // Si un disparo acierta en un contrincante, el siguiente disparo deberá realizarse hacia la derecha
                 }
@@ -703,11 +705,9 @@ int cambioRow(int direction,int lastHitRow) {
                 archivo << texto << "\n"; // Agregar nueva línea al final
                 archivo.close();
                 std::cout << "Jugador2 - registro de disparo guardado" << std::endl;
-                std::cout << "------------------------------------------------------------"<< std::endl;
                 std::cout << std::endl;
             } else {
                 std::cout << "Jugador2 - registro de disparo NO guardado al no poder abrir el archivo" << std::endl;
-                std::cout << "------------------------------------------------------------"<< std::endl;
                 std::cout << std::endl;
             }
 
