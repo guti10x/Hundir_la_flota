@@ -19,18 +19,20 @@ function solicitar_coordenada() {
 }
 
 tablero() {
-    while true; do
+    #while true; do
         # Pedir al usuario el número de filas y columnas
-        read -p "Introduce el número de filas (mínimo 5) del tablero: " filas
-        read -p "Introduce el número de columnas (mínimo 5) del tablero: " columnas
+        #read -p "Introduce el número de filas (mínimo 5) del tablero: " filas
+        #read -p "Introduce el número de columnas (mínimo 5) del tablero: " columnas
 
         # Comprobar si las filas y columnas son mayores o iguales a 5
-        if [ "$filas" -ge 5 ] && [ "$columnas" -ge 5 ]; then
-            break
-        else
-            echo "Error: El número de filas y columnas debe ser mayor o igual a 5."
-        fi
-    done
+        #if [ "$filas" -ge 5 ] && [ "$columnas" -ge 5 ]; then
+        #    break
+        #else
+        #    echo "Error: El número de filas y columnas debe ser mayor o igual a 5."
+        #fi
+    #done
+    filas=5
+    columnas=5
 
     # Crear una matriz inicializada a 0
     declare -A matriz
@@ -59,7 +61,7 @@ tablero() {
         # Verificar límites de las coordenadas
         if ((x_inicio < 0 || x_inicio >= filas)) || ((y_inicio < 0 || y_inicio >= columnas)); then
             echo "Error: Las coordenadas están fuera de rango del tablero."
-            exit 1
+            return
         fi
 
         # Verificar que ambas posiciones sean 0 antes de establecerlas a 1
@@ -89,11 +91,11 @@ tablero() {
             else
                 echo "Error: La posición contigua está fuera de rango del tablero o no es 0."
                 matriz["$x_inicio,$y_inicio"]=0  # Ajustar a 0 si es necesario
-                exit 1
+                return
             fi
         else
             echo "Error: La posición original no es 0."
-            exit 1
+            return
         fi
         
         # Incrementar el número de la fragata para la siguiente iteración
@@ -119,7 +121,7 @@ tablero() {
         # Verificar límites de las coordenadas
         if ((x_inicio < 0 || x_inicio >= filas)) || ((y_inicio < 0 || y_inicio >= columnas)); then
             echo "Error: Las coordenadas están fuera de rango del tablero."
-            exit 1
+            return
         fi
 
         # Verificar que ambas posiciones sean 0 antes de establecerlas a 1
@@ -170,16 +172,16 @@ tablero() {
                 else
                     echo "Error: La posición contigua a la contigua está fuera de rango del tablero o no es 0."
                     matriz["$x_inicio,$y_inicio"]=0  # Ajustar a 0 si es necesario
-                    exit 1
+                    return
                 fi
             else
                 echo "Error: La posición contigua está fuera de rango del tablero o no es 0."
                 matriz["$x_inicio,$y_inicio"]=0  # Ajustar a 0 si es necesario
-                exit 1
+                return
             fi
         else
             echo "Error: La posición original no es 0."
-            exit 1
+            return
         fi
 
         # Incrementar el número del bombardero para la siguiente iteración
@@ -203,7 +205,7 @@ tablero() {
     # Verificar límites de las coordenadas
     if ((x_inicio < 0 || x_inicio >= filas)) || ((y_inicio < 0 || y_inicio >= columnas)); then
         echo "Error: Las coordenadas están fuera de rango del tablero."
-        exit 1
+        return
     fi
 
     # Verificar que la posición original sea 0 antes de establecerla a 1
@@ -275,17 +277,17 @@ tablero() {
                 else
                     echo "Error: La posición contigua a la contigua de la contigua está fuera de rango del tablero o no es 0."
                     matriz["$x_inicio,$y_inicio"]=0  # Ajustar a 0 si es necesario
-                    exit 1
+                    return
                 fi
             else
                 echo "Error: La posición contigua a la contigua está fuera de rango del tablero o no es 0."
                 matriz["$x_inicio,$y_inicio"]=0  # Ajustar a 0 si es necesario
-                exit 1
+                return
             fi
         else
             echo "Error: La posición contigua está fuera de rango del tablero o no es 0."
             matriz["$x_inicio,$y_inicio"]=0  # Ajustar a 0 si es necesario
-            exit 1
+            return
         fi
     else
         echo "Error: La posición original no es 0."
@@ -378,9 +380,12 @@ lanzar_programa() {
     }
 
 monitorizar_programa() {
-    echo "Al ejecutar el juego se ira mostrando los disparos realizados escritos en el archiv de intercambio de disparos"
+    echo "Al ejecutar el juego se irá mostrando los disparos realizados escritos en el archivo de intercambio de disparos."
     # Ruta del archivo a monitorear
     archivo="$(dirname "$0")/intercambio_disparos.txt"
+
+    # Vaciar el contenido del archivo antes de abrirlo
+    > "$archivo"
 
     # Variable para almacenar el número de líneas del archivo
     num_lineas_anterior=$(wc -l < "$archivo")
