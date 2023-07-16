@@ -2,84 +2,147 @@
 
 tablero1() {
     while true; do
-    echo "Ingrese el número de filas (mínimo 5):"
-    read filas
+        # Pedir al usuario el número de filas y columnas
+        read -p "Introduce el número de filas (mínimo 5) del tablero: " filas
+        read -p "Introduce el número de columnas (mínimo 5) del tablero: " columnas
 
-    echo "Ingrese el número de columnas (mínimo 5):"
-    read columnas
-
-    if (( filas >= 5 && columnas >= 5 )); then
-       break
-    fi
+        # Comprobar si las filas y columnas son mayores o iguales a 5
+        if [ "$filas" -ge 5 ] && [ "$columnas" -ge 5 ]; then
+            break
+        else
+            echo "Error: El número de filas y columnas debe ser mayor o igual a 5."
+        fi
     done
 
-    # Crear una matriz vacía
-    matriz=()
+    # Crear una matriz inicializada a 0
+    declare -A matriz
+    for ((i=0; i<filas; i++)); do
+        for ((j=0; j<columnas; j++)); do
+            matriz[$i,$j]=0
+        done
+    done
 
-    # Rellenar la matriz con 0 o 1
-    for ((i=0; i<5; i++))
-    do
-        for ((j=0; j<5; j++))
-        do
-            echo "Ingrese el valor para la posición [$i][$j] (0 agua 1 barco):"
-            read valor
+    # Mostrar la matriz por consola
+    echo "Tablero generado:"
+    for ((i=0; i<filas; i++)); do
+        for ((j=0; j<columnas; j++)); do
+            echo -n "${matriz[$i,$j]} "
+        done
+        echo
+    done
+    
+    # Llenar la matriz con valores ingresados por el usuario
+    echo "Coloca los barcos en el tablero"
+    echo "Barcos disponibles: portaviones (4 uds), bombarderos (3 uds) y fragatas (2 uds)"
+    for ((i=0; i<filas; i++)); do
+        for ((j=0; j<columnas; j++)); do
+            valor=""
+            while [[ "$valor" != "0" && "$valor" != "1" ]]; do
+                read -p "Introduce un valor (0 (agua) o 1(barco)) para la posición [$i,$j]: " valor
+                if [[ "$valor" != "0" && "$valor" != "1" ]]; then
+                    echo "Error: Solo puedes introducir 0 o 1."
+                fi
+            done
             matriz[$i,$j]=$valor
         done
     done
+    # Mostrar la matriz por consola
+    echo "Barcos colocados:"
+    for ((i=0; i<filas; i++)); do
+        for ((j=0; j<columnas; j++)); do
+            echo -n "${matriz[$i,$j]} "
+        done
+        echo
+    done
 
     # Guardar la matriz en un archivo de texto
-    archivo="tablero_jugador1.txt"
-    rm -f "$archivo"  # Eliminar el archivo si ya existe
+    archivo_salida="tablero_jugador1.txt"
 
-    for ((i=0; i<5; i++))
-    do
-        for ((j=0; j<5; j++))
-        do
-            echo -n "${matriz[$i,$j]} " >> "$archivo"
+    # Eliminar el contenido del archivo
+    > $archivo_salida
+
+    # Agregar la matriz al archivo
+    for ((i=0; i<filas; i++)); do
+        for ((j=0; j<columnas; j++)); do
+            echo -n "${matriz[$i,$j]} " >> $archivo_salida
         done
-        echo >> "$archivo"
+        echo >> $archivo_salida
     done
+
+    echo "Matriz guardada en $archivo_salida"
 }
 
 tablero2() {
-    while true; do
-    echo "Ingrese el número de filas (mínimo 5):"
-    read filas
+   while true; do
+        # Pedir al usuario el número de filas y columnas
+        read -p "Introduce el número de filas (mínimo 5) del tablero: " filas
+        read -p "Introduce el número de columnas (mínimo 5) del tablero: " columnas
 
-    echo "Ingrese el número de columnas (mínimo 5):"
-    read columnas
-
-    if (( filas >= 5 && columnas >= 5)); then
-        break
-    fi
+        # Comprobar si las filas y columnas son mayores o iguales a 5
+        if [ "$filas" -ge 5 ] && [ "$columnas" -ge 5 ]; then
+            break
+        else
+            echo "Error: El número de filas y columnas debe ser mayor o igual a 5."
+        fi
     done
 
-    # Crear una matriz vacía
-    matriz=()
+    # Crear una matriz inicializada a 0
+    declare -A matriz
+    for ((i=0; i<filas; i++)); do
+        for ((j=0; j<columnas; j++)); do
+            matriz[$i,$j]=0
+        done
+    done
 
-    # Rellenar la matriz con 0 o 1
-    for ((i=0; i<filas; i++))
-    do
-        for ((j=0; j<columnas; j++))
-        do
-            echo "Ingrese el valor para la posición [$i][$j] (0 agua 1 barco):"
-            read valor
+    # Mostrar la matriz por consola
+    echo "Tablero generado:"
+    for ((i=0; i<filas; i++)); do
+        for ((j=0; j<columnas; j++)); do
+            echo -n "${matriz[$i,$j]} "
+        done
+        echo
+    done
+    
+    # Llenar la matriz con valores ingresados por el usuario
+    echo "Coloca los barcos en el tablero"
+    echo "Barcos disponibles: portaviones (4 uds), bombarderos (3 uds) y fragatas (2 uds)"
+    for ((i=0; i<filas; i++)); do
+        for ((j=0; j<columnas; j++)); do
+            valor=""
+            while [[ "$valor" != "0" && "$valor" != "1" ]]; do
+                read -p "Introduce un valor (0 (agua) o 1(barco)) para la posición [$i,$j]: " valor
+                if [[ "$valor" != "0" && "$valor" != "1" ]]; then
+                    echo "Error: Solo puedes introducir 0 o 1."
+                fi
+            done
             matriz[$i,$j]=$valor
         done
     done
 
-    # Guardar la matriz en un archivo de texto
-    archivo="tablero_jugador2.txt"
-    rm -f "$archivo"  # Eliminar el archivo si ya existe
-
-    for ((i=0; i<filas; i++))
-    do
-        for ((j=0; j<columnas; j++))
-        do
-            echo -n "${matriz[$i,$j]} " >> "$archivo"
+    # Mostrar la matriz por consola
+    echo "Barcos colocados:"
+    for ((i=0; i<filas; i++)); do
+        for ((j=0; j<columnas; j++)); do
+            echo -n "${matriz[$i,$j]} "
         done
-        echo >> "$archivo"
+        echo
     done
+
+    # Guardar la matriz en un archivo de texto
+    archivo_salida="tablero_jugador2.txt"
+
+    # Eliminar el contenido del archivo
+    > $archivo_salida
+
+    # Agregar la matriz al archivo
+    for ((i=0; i<filas; i++)); do
+        for ((j=0; j<columnas; j++)); do
+            echo -n "${matriz[$i,$j]} " >> $archivo_salida
+        done
+        echo >> $archivo_salida
+    done
+
+    echo "Matriz guardada en $archivo_salida"
 }
 
 # Función para comprobar archivos necesarios para ejecución y compilar
