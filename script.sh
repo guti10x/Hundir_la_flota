@@ -321,7 +321,7 @@ tablero() {
     done
 
     # Guardar la matriz en un archivo de texto
-    archivo_salida="tablero_jugador1.txt"
+    local archivo_salida="$1"
 
     # Eliminar el contenido del archivo
     > $archivo_salida
@@ -429,10 +429,12 @@ while true; do
 
     case $opcion in
         1)
-            tablero
+            nombre_archivo="tablero_jugador1.txt"
+            tablero "$nombre_archivo"
             ;;
         2)
-            tablero2 
+            nombre_archivo="tablero_jugador2.txt"
+            tablero "$nombre_archivo"
             ;;
         3)
             compilar
