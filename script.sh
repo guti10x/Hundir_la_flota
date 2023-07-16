@@ -95,7 +95,7 @@ tablero() {
             echo "Error: La posición original no es 0."
             exit 1
         fi
-
+        
         # Incrementar el número de la fragata para la siguiente iteración
         ((num++))
     done
@@ -108,14 +108,14 @@ tablero() {
         done
         echo
     done
-
+        
     num=1
     for _ in {1..2}; do    
-        # Solicitar posicion y orientacion bombardeo
-        local x_inicio=$(solicitar_coordenada "x de la bombardero $num dentro del tablero")
-        local y_inicio=$(solicitar_coordenada "Y de la bombardero $num dentro del tablero")
-        local orientacion=$(solicitar_orientacion "de la bbombardero $num dentro del tablero")
-        
+        # Solicitar posición y orientación del bombardero
+        local x_inicio=$(solicitar_coordenada "x del bombardero $num dentro del tablero")
+        local y_inicio=$(solicitar_coordenada "y del bombardero $num dentro del tablero")
+        local orientacion=$(solicitar_orientacion "del bombardero $num dentro del tablero")
+
         # Verificar límites de las coordenadas
         if ((x_inicio < 0 || x_inicio >= filas)) || ((y_inicio < 0 || y_inicio >= columnas)); then
             echo "Error: Las coordenadas están fuera de rango del tablero."
@@ -144,8 +144,34 @@ tablero() {
 
             # Verificar límites de las coordenadas contiguas
             if ((x_inicio >= 0 && x_inicio < filas)) && ((y_inicio >= 0 && y_inicio < columnas)) &&
-            [ "${matriz[$x_inicio,$y_inicio]}" -eq 0 ]; then
+                [ "${matriz[$x_inicio,$y_inicio]}" -eq 0 ]; then
                 matriz["$x_inicio,$y_inicio"]=1
+
+                # Establecer la posición contigua a la contigua según la orientación
+                case "$orientacion" in
+                    N)
+                        ((x_inicio--))
+                        ;;
+                    S)
+                        ((x_inicio++))
+                        ;;
+                    E)
+                        ((y_inicio++))
+                        ;;
+                    O)
+                        ((y_inicio--))
+                        ;;
+                esac
+
+                # Verificar límites de las coordenadas contiguas a la contigua
+                if ((x_inicio >= 0 && x_inicio < filas)) && ((y_inicio >= 0 && y_inicio < columnas)) &&
+                    [ "${matriz[$x_inicio,$y_inicio]}" -eq 0 ]; then
+                    matriz["$x_inicio,$y_inicio"]=1
+                else
+                    echo "Error: La posición contigua a la contigua está fuera de rango del tablero o no es 0."
+                    matriz["$x_inicio,$y_inicio"]=0  # Ajustar a 0 si es necesario
+                    exit 1
+                fi
             else
                 echo "Error: La posición contigua está fuera de rango del tablero o no es 0."
                 matriz["$x_inicio,$y_inicio"]=0  # Ajustar a 0 si es necesario
@@ -158,7 +184,6 @@ tablero() {
 
         # Incrementar el número del bombardero para la siguiente iteración
         ((num++))
-
     done
 
     # Mostrar la matriz por consola
@@ -169,21 +194,19 @@ tablero() {
         done
         echo
     done
-
-    um=1
  
-    # Solicitar posicion y orientacion del potaviones
-    local x_inicio=$(solicitar_coordenada "x del portaviones $num dentro del tablero")
-    local y_inicio=$(solicitar_coordenada "Y del portaviones $num dentro del tablero")
-    local orientacion=$(solicitar_orientacion "del portaviones $num dentro del tablero")
-        
+     # Solicitar posición y orientación del portaviones
+    local x_inicio=$(solicitar_coordenada "x del portaviones dentro del tablero")
+    local y_inicio=$(solicitar_coordenada "y del portaviones dentro del tablero")
+    local orientacion=$(solicitar_orientacion "del portaviones dentro del tablero")
+
     # Verificar límites de las coordenadas
     if ((x_inicio < 0 || x_inicio >= filas)) || ((y_inicio < 0 || y_inicio >= columnas)); then
         echo "Error: Las coordenadas están fuera de rango del tablero."
         exit 1
     fi
 
-    # Verificar que ambas posiciones sean 0 antes de establecerlas a 1
+    # Verificar que la posición original sea 0 antes de establecerla a 1
     if [ "${matriz[$x_inicio,$y_inicio]}" -eq 0 ]; then
         matriz["$x_inicio,$y_inicio"]=1
 
@@ -198,7 +221,7 @@ tablero() {
             E)
                 ((y_inicio++))
                 ;;
-                O)
+            O)
                 ((y_inicio--))
                 ;;
         esac
@@ -207,6 +230,58 @@ tablero() {
         if ((x_inicio >= 0 && x_inicio < filas)) && ((y_inicio >= 0 && y_inicio < columnas)) &&
             [ "${matriz[$x_inicio,$y_inicio]}" -eq 0 ]; then
             matriz["$x_inicio,$y_inicio"]=1
+
+            # Establecer la posición contigua a la contigua según la orientación
+            case "$orientacion" in
+                N)
+                    ((x_inicio--))
+                    ;;
+                S)
+                    ((x_inicio++))
+                    ;;
+                E)
+                    ((y_inicio++))
+                    ;;
+                O)
+                    ((y_inicio--))
+                    ;;
+            esac
+
+            # Verificar límites de las coordenadas contiguas a la contigua
+            if ((x_inicio >= 0 && x_inicio < filas)) && ((y_inicio >= 0 && y_inicio < columnas)) &&
+                [ "${matriz[$x_inicio,$y_inicio]}" -eq 0 ]; then
+                matriz["$x_inicio,$y_inicio"]=1
+
+                # Establecer la posición contigua a la contigua de la contigua según la orientación
+                case "$orientacion" in
+                    N)
+                        ((x_inicio--))
+                        ;;
+                    S)
+                        ((x_inicio++))
+                        ;;
+                    E)
+                        ((y_inicio++))
+                        ;;
+                    O)
+                        ((y_inicio--))
+                        ;;
+                esac
+
+                # Verificar límites de las coordenadas contiguas a la contigua de la contigua
+                if ((x_inicio >= 0 && x_inicio < filas)) && ((y_inicio >= 0 && y_inicio < columnas)) &&
+                    [ "${matriz[$x_inicio,$y_inicio]}" -eq 0 ]; then
+                    matriz["$x_inicio,$y_inicio"]=1
+                else
+                    echo "Error: La posición contigua a la contigua de la contigua está fuera de rango del tablero o no es 0."
+                    matriz["$x_inicio,$y_inicio"]=0  # Ajustar a 0 si es necesario
+                    exit 1
+                fi
+            else
+                echo "Error: La posición contigua a la contigua está fuera de rango del tablero o no es 0."
+                matriz["$x_inicio,$y_inicio"]=0  # Ajustar a 0 si es necesario
+                exit 1
+            fi
         else
             echo "Error: La posición contigua está fuera de rango del tablero o no es 0."
             matriz["$x_inicio,$y_inicio"]=0  # Ajustar a 0 si es necesario
@@ -216,6 +291,9 @@ tablero() {
         echo "Error: La posición original no es 0."
         exit 1
     fi
+
+    # Incrementar el número del bombardero para la siguiente iteración
+    ((num++))
 
     # Llenar la matriz con valores ingresados por el usuario
     #echo "Coloca los barcos en el tablero"
